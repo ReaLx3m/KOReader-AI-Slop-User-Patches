@@ -5,8 +5,8 @@ User patch: Remove the "../" folder-up entry in all views
 Installation:
   Copy this file to:  koreader/patches/2-no-folder-up.lua
 
-Navigation up is still available via the hamburger menu → Go up,
-or by long-pressing the home button (see 2-home-hold-go-up.lua).
+Navigation up is still available via the hamburger menu → Go up, by asigning a gesture, 
+or by long-pressing the home button (if 2-home-hold-go-up.lua is installed).
 --]]
 
 local FileChooser = require("ui/widget/filechooser")
