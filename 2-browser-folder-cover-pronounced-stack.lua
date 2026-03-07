@@ -1,3 +1,6 @@
+--[[
+More pronounced stacks compared to original, for beter visual hinting. Code borrowed from https://github.com/sebdelsol/KOReader.patches 
+--]]
 local AlphaContainer = require("ui/widget/container/alphacontainer")
 local BD = require("ui/bidi")
 local Blitbuffer = require("ffi/blitbuffer")
