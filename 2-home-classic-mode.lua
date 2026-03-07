@@ -8,7 +8,7 @@ Installation:
 Customise the two constants below if needed.
 --]]
 
-local HOME_PATH   = "/mnt/ext1/1Stripovi"  -- full path to your home folder
+local HOME_PATH   = "/mnt/ext1/HomeFolder"  -- full path to your home folder
 local NORMAL_MODE = "mosaic_image"          -- mode used everywhere else
 
 local userpatch   = require("userpatch")
