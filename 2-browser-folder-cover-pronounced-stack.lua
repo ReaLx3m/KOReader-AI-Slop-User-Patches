@@ -1,4 +1,5 @@
 --[[
+Folders with thumbnails, image taken from first file in folder. Stack effect + text box in the middle with foldewr name to differentiate from books.
 More pronounced stacks compared to original, for beter visual hinting. Code borrowed from https://github.com/sebdelsol/KOReader.patches 
 --]]
 local AlphaContainer = require("ui/widget/container/alphacontainer")
