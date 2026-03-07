@@ -33,11 +33,12 @@ local function patchMosaicMenuItem(MosaicMenuItem)
     MosaicMenuItem.paintTo = function(self, bb, x, y)
         orig_paintTo(self, bb, x, y)
 
+        -- skip folders using KOReader's own flag (set by MosaicMenuItem:update)
+        if self.is_directory then return end
+
         local raw = self.filepath or self.text or ""
         local _, filename = util.splitFilePathName(raw)
-        local name, ext = util.splitFileNameSuffix(filename)
-        -- skip folders (no extension)
-        if ext == "" then return end
+        local name = util.splitFileNameSuffix(filename)
         if name == "" then return end
 
         local item_w = self.dimen and self.dimen.w or self.width or 0
