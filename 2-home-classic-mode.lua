@@ -6,7 +6,7 @@ Installation:
   Copy this file to:  koreader/patches/2-home-classic-mode.lua
 
 Customise the two constants below if needed.
-!!! Important: Home Folder path needs to correspond to your home folder or patch wont work.
+!!! Important: Home Folder path needs to correspond to your home folder path/name or patch wont work.
 --]]
 
 local HOME_PATH   = "/mnt/ext1/HomeFolder"  -- full path to your home folder
