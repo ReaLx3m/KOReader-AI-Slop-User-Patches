@@ -1,3 +1,8 @@
+--[[
+Folders with thumbnails, image taken from first file in folder. Stack effect + text box in the middle with folder name to differentiate from books.
+More(medium) pronounced stacks compared to original for beter visual hinting. Smaller max font size. Code borrowed from https://github.com/sebdelsol/KOReader.patches 
+--]]
+
 local AlphaContainer = require("ui/widget/container/alphacontainer")
 local BD = require("ui/bidi")
 local Blitbuffer = require("ffi/blitbuffer")
