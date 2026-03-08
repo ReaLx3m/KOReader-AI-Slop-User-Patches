@@ -1,9 +1,12 @@
 Installation:
 
 Go to your Koreader folder:
+
 Cervantes: /mnt/private/koreader
 Kindle: koreader/
+
 Kobo: .adds/koreader/
+
 PocketBook: applications/koreader/
 
 If "patches" folder doesnt exist create it, and just copy the .lua file to the folder.
