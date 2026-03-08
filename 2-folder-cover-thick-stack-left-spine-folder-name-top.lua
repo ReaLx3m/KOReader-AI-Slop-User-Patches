@@ -111,18 +111,26 @@ local function patchCoverBrowser(plugin)
     local MosaicMenu = require("mosaicmenu")
     local MosaicMenuItem = userpatch.getUpValue(MosaicMenu._updateItemsBuildUI, "MosaicMenuItem")
     if not MosaicMenuItem then return end -- Protect against remnants of project title
-    local BookInfoManager = userpatch.getUpValue(MosaicMenuItem.update, "BookInfoManager")
     local original_update = MosaicMenuItem.update
+    -- BookInfoManager is an upvalue of the real update; grab it lazily on first
+    -- use so it is guaranteed to be initialised by the time we need it.
+    local BookInfoManager
+    local function getBookInfoManager()
+        if not BookInfoManager then
+            BookInfoManager = userpatch.getUpValue(original_update, "BookInfoManager")
+        end
+        return BookInfoManager
+    end
 
     -- setting
     function BooleanSetting(text, name, default)
         self = { text = text }
         self.get = function()
-            local setting = BookInfoManager:getSetting(name)
+            local setting = getBookInfoManager():getSetting(name)
             if default then return not setting end -- false is stored as nil, so we need or own logic for boolean default
             return setting
         end
-        self.toggle = function() return BookInfoManager:toggleSetting(name) end
+        self.toggle = function() return getBookInfoManager():toggleSetting(name) end
         return self
     end
 
@@ -132,8 +140,52 @@ local function patchCoverBrowser(plugin)
         show_folder_name = BooleanSetting(_("Show folder name"), "folder_name_show", true),
     }
 
+    -- Returns a cached book cover from entries, or nil if none found.
+    local function findBookCover(menu, entries, cover_specs)
+        for _, entry in ipairs(entries) do
+            if entry.is_file or entry.file then
+                local bookinfo = getBookInfoManager():getBookInfo(entry.path, true)
+                if
+                    bookinfo
+                    and bookinfo.cover_bb
+                    and bookinfo.has_cover
+                    and bookinfo.cover_fetched
+                    and not bookinfo.ignore_cover
+                    and not getBookInfoManager().isCachedCoverInvalid(bookinfo, cover_specs)
+                then
+                    return bookinfo
+                end
+            end
+        end
+        return nil
+    end
+
+    -- Recursively searches path then subfolders (depth-first) for a cached book cover.
+    local _scanning = false  -- guard against recursive update() calls during subfolder scan
+
+    local function findBookCoverRecursive(menu, path, cover_specs, depth)
+        depth = depth or 0
+        if depth > 2 then return nil end
+        menu._dummy = true
+        _scanning = true
+        local ok, entries = pcall(menu.genItemTableFromPath, menu, path)
+        _scanning = false
+        menu._dummy = false
+        if not ok then return nil end
+        local bookinfo = findBookCover(menu, entries, cover_specs)
+        if bookinfo then return bookinfo end
+        for _, entry in ipairs(entries) do
+            if not (entry.is_file or entry.file) and entry.path then
+                bookinfo = findBookCoverRecursive(menu, entry.path, cover_specs, depth + 1)
+                if bookinfo then return bookinfo end
+            end
+        end
+        return nil
+    end
+
     -- cover item
     function MosaicMenuItem:update(...)
+        if _scanning then return end  -- bail out entirely during recursive subfolder scan
         original_update(self, ...)
         if self._foldercover_processed or self.menu.no_refresh_covers or not self.do_cover_image then return end
 
@@ -159,26 +211,9 @@ local function patchCoverBrowser(plugin)
             end
         end
 
-        self.menu._dummy = true
-        local entries = self.menu:genItemTableFromPath(dir_path) -- sorted
-        self.menu._dummy = false
-        if not entries then return end
-
-        for _, entry in ipairs(entries) do
-            if entry.is_file or entry.file then
-                local bookinfo = BookInfoManager:getBookInfo(entry.path, true)
-                if
-                    bookinfo
-                    and bookinfo.cover_bb
-                    and bookinfo.has_cover
-                    and bookinfo.cover_fetched
-                    and not bookinfo.ignore_cover
-                    and not BookInfoManager.isCachedCoverInvalid(bookinfo, self.menu.cover_specs)
-                then
-                    self:_setFolderCover { data = bookinfo.cover_bb, w = bookinfo.cover_w, h = bookinfo.cover_h }
-                    break
-                end
-            end
+        local bookinfo = findBookCoverRecursive(self.menu, dir_path, self.menu.cover_specs)
+        if bookinfo then
+            self:_setFolderCover { data = bookinfo.cover_bb, w = bookinfo.cover_w, h = bookinfo.cover_h }
         end
     end
 
