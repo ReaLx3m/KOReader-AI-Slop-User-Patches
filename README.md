@@ -1,5 +1,4 @@
 Installation:
-
 Go to your Koreader folder:
 Cervantes: /mnt/private/koreader
 Kindle: koreader/
