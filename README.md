@@ -1,4 +1,4 @@
-Installation:
+## **Installation:**
 
 Save the patch(.lua file) by right clicking the desired one and selecting "save link as". 
 
