@@ -10,7 +10,7 @@ If "patches" folder doesnt exist create it, and just copy the .lua file to the f
 
 To uninstall just delete the file from the "patches" folder.
 
-To disable go to the wrench menu>More Tools>Patch Management>After Setup, and uncheck the patch you want disabled. Restart koreader.
+To disable open the wrench menu>More Tools>Patch Management>After Setup, and uncheck the patch you want disabled. Restart koreader.
 Disabling can also be done in explorer by adding .disabled extension to the file, resulting in ".lua.disabled"
 
 
