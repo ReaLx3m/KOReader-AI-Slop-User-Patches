@@ -40,7 +40,7 @@ Replaces the default folder icon in mosaic view with a visual book-stack effect.
 
 ### **2-mosaic-vertical-label-left.lua**
 
-Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top. Folder tiles are left unlabelled.
+Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top.
 
 Configurable constants at the top of the file:
 - LABEL_ALPHA — opacity (default 0.80)
