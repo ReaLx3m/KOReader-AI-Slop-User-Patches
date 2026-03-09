@@ -1,8 +1,6 @@
 
 ## **How to Install**
 
-### **Patches tested on KOReader 2025.10 Ghost.**
-
 Save the patch(.lua file) by right clicking the desired one and selecting "save link as". 
 
 Go to your Koreader folder:
@@ -66,5 +64,5 @@ https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.l
 
 - Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
 
-
+### **Patches tested on KOReader 2025.10 Ghost.**
 
