@@ -17,8 +17,8 @@ Disabling can also be done in explorer by adding .disabled extension to the file
 To uninstall just delete the file from the "patches" folder.
 
 
-<img width="1024" height="1280" alt="Home" src="https://github.com/user-attachments/assets/a8bed22a-0624-4151-a893-13d0af581988" />
-<img width="1024" height="1280" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
+<img width="600" height="800" alt="Home" src="https://github.com/user-attachments/assets/a8bed22a-0624-4151-a893-13d0af581988" />
+<img width="600" height="800" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
 
 ## **Patches Description**
 
