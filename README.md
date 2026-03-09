@@ -60,7 +60,7 @@ Configurable constants at the top of the file:
 
 ### **2-no-folder-up.lua**
 
-Removes the ../ folder-up entry from the file browser in all display modes (classic, mosaic, and list), keeping the file list clean.
+Removes the folder-up entry from the file browser in all display modes (classic, mosaic, and list), keeping the file list clean.
 Navigation up remains accessible via Long-press home button till nested folder menu pops up, mapping a tap-zone/gesture to the action, long pressing home button if "2-home-hold-go-up.lua" is also installed.
 
 
