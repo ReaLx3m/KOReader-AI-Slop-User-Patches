@@ -95,11 +95,11 @@ local Folder = {
     edge = {
         thick = Screen:scaleBySize(3.75 * 0.75),
         margin = Size.line.medium * 1.5,
-        color = Blitbuffer.COLOR_GRAY_4,
         width = 0.97,
     },
     face = {
-        border_size = Size.border.thick,
+        border_size = Screen:scaleBySize(3.75 * 0.75),
+        label_border_size = Size.border.thin,
         alpha = 0.75,
         nb_items_font_size = 14,
         nb_items_margin = Screen:scaleBySize(5),
@@ -138,7 +138,6 @@ local function patchCoverBrowser(plugin)
 
     local settings = {
         crop_to_fit = BooleanSetting(_("Crop folder custom image"), "folder_crop_custom_image", true),
-        name_centered = BooleanSetting(_("Folder name centered"), "folder_name_centered", true),
         show_folder_name = BooleanSetting(_("Show folder name"), "folder_name_show", true),
     }
 
@@ -259,7 +258,9 @@ local function patchCoverBrowser(plugin)
                 dimen = dimen,
                 FrameContainer:new {
                     padding = 0,
-                    bordersize = Folder.face.border_size,
+                    padding_top = Screen:scaleBySize(2.6),
+                    padding_left = Screen:scaleBySize(2.6),
+                    bordersize = 0,
                     AlphaContainer:new { alpha = Folder.face.alpha, directory },
                 },
                 overlap_align = "center",
@@ -312,31 +313,60 @@ local function patchCoverBrowser(plugin)
         local b3_left = img_left - step * 2
         local b3_top  = img_top  - step * 2
 
-        local function bookL(bx, by, w, h)
+        local function bookL(bx, by, w, h, color)
             -- L-shape: top edge + left edge meeting at top-left corner
             return {
                 OverlapGroup:new {
                     dimen = { w = w, h = Folder.edge.thick },
                     overlap_offset = { bx, by },
-                    LineWidget:new { background = Folder.edge.color, dimen = { w = w, h = Folder.edge.thick } },
+                    LineWidget:new { background = color, dimen = { w = w, h = Folder.edge.thick } },
                 },
                 OverlapGroup:new {
                     dimen = { w = Folder.edge.thick, h = h },
                     overlap_offset = { bx, by },
-                    LineWidget:new { background = Folder.edge.color, dimen = { w = Folder.edge.thick, h = h } },
+                    LineWidget:new { background = color, dimen = { w = Folder.edge.thick, h = h } },
                 },
             }
         end
 
-        local b2 = bookL(b2_left, b2_top, dimen.w, dimen.h)
-        local b3 = bookL(b3_left, b3_top, dimen.w, dimen.h)
+        -- Short horizontal connector at the bottom of a vertical edge,
+        -- bridging from one layer's left edge to the next layer's left edge.
+        local function bookConnector(bx, by, h, color)
+            return OverlapGroup:new {
+                dimen = { w = step, h = Folder.edge.thick },
+                overlap_offset = { bx, by + h - Folder.edge.thick },
+                LineWidget:new { background = color, dimen = { w = step, h = Folder.edge.thick } },
+            }
+        end
+
+        -- Short vertical connector at the right end of a horizontal top edge,
+        -- dropping down to meet the next layer's top horizontal line.
+        local function topConnector(bx, by, w, color)
+            return OverlapGroup:new {
+                dimen = { w = Folder.edge.thick, h = step },
+                overlap_offset = { bx + w - Folder.edge.thick, by },
+                LineWidget:new { background = color, dimen = { w = Folder.edge.thick, h = step } },
+            }
+        end
+
+        local b2 = bookL(b2_left, b2_top, dimen.w, dimen.h, Blitbuffer.COLOR_GRAY_1)
+        local b3 = bookL(b3_left, b3_top, dimen.w, dimen.h, Blitbuffer.COLOR_GRAY_2)
+
+        -- Connector: b3's left edge bottom → b2's left edge (short horizontal)
+        local b3_connector = bookConnector(b3_left, b3_top, dimen.h, Blitbuffer.COLOR_GRAY_2)
+        -- Connector: b2's left edge bottom → cover's left edge (short horizontal)
+        local b2_connector = bookConnector(b2_left, b2_top, dimen.h, Blitbuffer.COLOR_GRAY_1)
+        -- Connector: b3's top edge right end → b2's top edge (short vertical drop)
+        local b3_top_connector = topConnector(b3_left, b3_top, dimen.w, Blitbuffer.COLOR_GRAY_2)
+        -- Connector: b2's top edge right end → cover's top edge (short vertical drop)
+        local b2_top_connector = topConnector(b2_left, b2_top, dimen.w, Blitbuffer.COLOR_GRAY_1)
 
         local widget = OverlapGroup:new {
             dimen = { w = self.width, h = self.height },
             -- book3 (furthest back)
-            b3[1], b3[2],
+            b3[1], b3[2], b3_connector, b3_top_connector,
             -- book2 (middle)
-            b2[1], b2[2],
+            b2[1], b2[2], b2_connector, b2_top_connector,
             -- cover (front)
             OverlapGroup:new {
                 dimen = { w = dimen.w, h = dimen.h },
