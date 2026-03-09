@@ -36,7 +36,7 @@ Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet 
 ### **2-folder-cover-stack-left-spine-label-top.lua**
 
 - Replaces the default folder icon in mosaic view with a visual book-stack effect.
-- Adds a thumbnail pulled from the folders contents(book/image), if no books or images are present in the root of the folder it will pull the thumbnail from a subfolder.
+- Adds a thumbnail pulled from the folders contents(book/image). If no books or images are present in the root of the folder it will pull the thumbnail from a subfolder.
 - Adds a label at the top showing the folder name. 
 
 
