@@ -11,12 +11,12 @@ Menu integration: Adds a Multiview toggle and a Multiview Settings sub-menu to t
 
 
 
-**2-folder-cover-stack-left-spine-label-top.lua**
+### **2-folder-cover-stack-left-spine-label-top.lua**
 
 Replaces the default folder icon in mosaic view with a visual book-stack effect. Adds a thumbnail pulled from the folders contents(book/image), and a label at the top showing the folder name. If no books or images are present in the root of the folder, it will pull the thumbnail from a subfolder.
 
 
-**2-mosaic-vertical-label-left.lua**
+### **2-mosaic-vertical-label-left.lua**
 
 Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top. Folder tiles are left unlabelled.
 Configurable constants at the top of the file:
@@ -25,7 +25,7 @@ Configurable constants at the top of the file:
 - LABEL_PADDING — padding around the text in pixels (default 4)
 
 
-**2-mosaic-top-horizontal-label.lua**
+### **2-mosaic-top-horizontal-label.lua**
 
 Overlays a semi-transparent horizontal filename label(without file extension) at the top of each book cover in mosaic view, centred within the tile. 
 Configurable constants at the top of the file:
@@ -34,13 +34,13 @@ Configurable constants at the top of the file:
 - LABEL_PADDING — padding around the text in pixels (default 4)
 
 
-**2-no-folder-up.lua**
+### **2-no-folder-up.lua**
 
 Removes the ../ folder-up entry from the file browser in all display modes (classic, mosaic, and list), keeping the file list clean.
 Navigation up remains accessible via Long-press home button till nested folder menu pops up, mapping a tap-zone/gesture to the action, long pressing home button if "2-home-hold-go-up.lua" is also installed.
 
 
-**2-home-hold-go-up.lua**
+### **2-home-hold-go-up.lua**
 
 Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
 
