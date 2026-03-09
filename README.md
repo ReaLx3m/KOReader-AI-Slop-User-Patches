@@ -28,7 +28,7 @@ To uninstall just delete the file from the "patches" folder.
 
 Automatically switches the file browser display mode based on the contents of the folder you're browsing.
 
-Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet icon menu under Settings.
+Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet icon menu on the top bar.
 - 2 modes(Folder Mode and File Mode), both modes are independently configurable via the Multiview Settings menu. You can choose any rows/columns configuration with "Mosaic With Covers" view mode and any number of items with "Classic" mode view.
 - Folders that contain sub-folders or mix of sub-folders and files will display in the mode you set in "Folder Mode", Classic mode is set as default.
 - Folders that contain only files will display in the mode you set in "File Mode", Mosaic mode with cover images is set as default.
