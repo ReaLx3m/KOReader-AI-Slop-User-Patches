@@ -44,20 +44,10 @@ Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet 
 
 - Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top.
 
-Configurable constants at the top of the file:
-- LABEL_ALPHA — opacity (default 0.80)
-- LABEL_FONT_SIZE — font size in points (default 16)
-- LABEL_PADDING — padding around the text in pixels (default 4)
-
 
 ### **2-mosaic-top-horizontal-label.lua**
 
 - Overlays a horizontal filename label(without file extension) at the top of each book cover in mosaic view, centred within the tile. 
-
-Configurable constants at the top of the file:
-- LABEL_ALPHA — opacity (default 0.75)
-- LABEL_FONT_SIZE — font size in points (default 14)
-- LABEL_PADDING — padding around the text in pixels (default 4)
 
 
 ### **2-no-folder-up.lua**
