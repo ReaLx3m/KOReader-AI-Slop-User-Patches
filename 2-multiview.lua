@@ -212,12 +212,8 @@ end
 -- ── menu ──────────────────────────────────────────────────────────────────────
 
 local MODE_OPTIONS = {
-    { _("Classic (filename list)"),                "classic"             },
-    { _("Mosaic with cover images"),               "mosaic_image"        },
-    { _("Mosaic with text covers"),                "mosaic_text"         },
-    { _("Detailed list with cover + metadata"),    "list_image_meta"     },
-    { _("Detailed list with metadata only"),       "list_only_meta"      },
-    { _("Detailed list with cover + filename"),    "list_image_filename" },
+    { _("Classic (filename list)"),  "classic"      },
+    { _("Mosaic with cover images"), "mosaic_image" },
 }
 
 local function modeLabel(prefix)
