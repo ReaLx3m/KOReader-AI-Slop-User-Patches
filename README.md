@@ -10,6 +10,7 @@ Menu integration: Adds a Multiview toggle and a Multiview Settings sub-menu to t
 - Folders that contain only files will display in the mode you set in "File Mode", Mosaic mode with cover images is set as default.
 
 
+
 **2-folder-cover-stack-left-spine-label-top.lua**
 
 Replaces the default folder icon in mosaic view with a visual book-stack effect. Adds a thumbnail pulled from the folders contents(book/image), and a label at the top showing the folder name. If no books or images are present in the root of the folder, it will pull the thumbnail from a subfolder.
