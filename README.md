@@ -38,6 +38,7 @@ Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet 
 - Replaces the default folder icon in mosaic view with a visual book-stack effect.
 - Adds a thumbnail pulled from the folders contents(book/image). If no books or images are present in the root of the folder it will pull the thumbnail from a subfolder.
 - Adds a label at the top showing the folder name. 
+https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.lua used as base and as id like to think, improved :).
 
 
 ### **2-mosaic-vertical-label-left.lua**
