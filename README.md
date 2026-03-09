@@ -33,7 +33,7 @@ Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet 
 - Folders that contain sub-folders or mix of sub-folders and files will display in the mode you set in "Folder Mode", Classic mode is set as default.
 - Folders that contain only files will display in the mode you set in "File Mode", Mosaic mode with cover images is set as default.
 
-When you make changes to the Folder and/or File Modes, it might appear that the changes arent applied. You need to either press Home or access a different folder from your current one, for the views to refresh and show correctly from there on. Already have a version that fixes that and applies the changes on the fly, but is still not tested. Maybe ill release it maybe not, not a big annoyance as is i think. If you do want that version to try out, ask for it over at "Issues" tab. 
+When you make changes to the Folder and/or File Modes, it might appear that the changes arent applied. If that happens you need to either press Home or access a different folder from your current one, for the views to refresh and show correctly from there on. Already have a version that fixes that and applies the changes on the fly, but is still not tested. Maybe ill release it maybe not, not a big annoyance as is i think. If you do want that version to try out, ask for it over at "Issues" tab. 
 
 
 ### **2-folder-cover-stack-left-spine-label-top.lua**
