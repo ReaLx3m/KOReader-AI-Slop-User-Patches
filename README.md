@@ -50,6 +50,12 @@ https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.l
 
 - Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top.
 
+### **2-mosaic-vertical-label-advanced.lua**
+
+If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then go for this one. Added Settings sub-menu to the filing-cabinet icon menu on the top bar.
+- Position left or right
+- Text direction bottom to top or top to bottom
+- Label text pulled from filename or metadata. Metadata options are Title, Author-Title and Title-Author.
 
 ### **2-mosaic-top-horizontal-label.lua**
 
