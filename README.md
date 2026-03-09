@@ -42,7 +42,7 @@ Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet 
 - Adds a label at the top showing the folder name.
 - Bottom label with folder/file count and icons to represent each respectively.
 
-https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.lua was used as base and as id like to think, improved :).
+https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.lua was used as base.
 
 
 ### **2-mosaic-vertical-label-left.lua**
