@@ -1,4 +1,44 @@
 
+## **Patches Description**
+
+**2-multiview.lua**
+
+Automatically switches the file browser display mode based on the contents of the folder you're browsing.
+Menu integration: Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet icon menu under Settings.
+- 2 modes(Folder Mode and File Mode), both modes are independently configurable via the Multiview Settings menu
+- Folders that contain sub-folders or mix of sub-folders and files will display in the mode you set in "Folder Mode", Classic mode is set as default.
+- Folders that contain only files will display in the mode you set in "File Mode", Mosaic mode with cover images is set as default.
+
+
+**2-folder-cover-stack-left-spine-label-top.lua**
+Replaces the default folder icon in mosaic view with a visual book-stack effect. Adds a thumbnail pulled from the folders contents(book/image), and a label at the top showing the folder name. If no books or images are present in the root of the folder, it will pull the thumbnail from a subfolder.
+
+
+**2-mosaic-vertical-label-left.lua**
+Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top. Folder tiles are left unlabelled.
+Configurable constants at the top of the file:
+- LABEL_ALPHA — opacity (default 0.80)
+- LABEL_FONT_SIZE — font size in points (default 16)
+- LABEL_PADDING — padding around the text in pixels (default 4)
+
+
+**2-mosaic-top-horizontal-label.lua**
+Overlays a semi-transparent horizontal filename label(without file extension) at the top of each book cover in mosaic view, centred within the tile. 
+Configurable constants at the top of the file:
+- LABEL_ALPHA — opacity (default 0.75)
+- LABEL_FONT_SIZE — font size in points (default 14)
+- LABEL_PADDING — padding around the text in pixels (default 4)
+
+
+**2-no-folder-up.lua**
+Removes the ../ folder-up entry from the file browser in all display modes (classic, mosaic, and list), keeping the file list clean.
+Navigation up remains accessible via Long-press home button till nested folder menu pops up, mapping a tap-zone/gesture to the action, long pressing home button if "2-home-hold-go-up.lua" is also installed.
+
+
+**2-home-hold-go-up.lua**
+Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
+
+
 ## **How to Install**
 
 Save the patch(.lua file) by right clicking the desired one and selecting "save link as". 
