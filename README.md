@@ -1,67 +1,88 @@
+🛠️ KOReader User Patches
 
-## **Patches Description**
+A collection of functional enhancements to customize the KOReader file browser and navigation experience.
+📂 Patches Description
+🔄 2-multiview.lua
 
-### **2-multiview.lua**
+    Smart View Switching: Automatically changes the display mode based on folder contents.
 
-Automatically switches the file browser display mode based on the contents of the folder you're browsing.
-Menu integration: Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet icon menu under Settings.
-- 2 modes(Folder Mode and File Mode), both modes are independently configurable via the Multiview Settings menu
-- Folders that contain sub-folders or mix of sub-folders and files will display in the mode you set in "Folder Mode", Classic mode is set as default.
-- Folders that contain only files will display in the mode you set in "File Mode", Mosaic mode with cover images is set as default.
+    Logic:
 
+        Folder Mode: Applied to folders containing sub-folders. (Default: Classic)
 
+        File Mode: Applied to folders containing only files. (Default: Mosaic with covers)
 
-### **2-folder-cover-stack-left-spine-label-top.lua**
+    Menu Integration: Adds a Multiview toggle and Settings sub-menu under the filing-cabinet icon (Settings menu).
 
-Replaces the default folder icon in mosaic view with a visual book-stack effect. Adds a thumbnail pulled from the folders contents(book/image), and a label at the top showing the folder name. If no books or images are present in the root of the folder, it will pull the thumbnail from a subfolder.
+📚 2-folder-cover-stack-left-spine-label-top.lua
 
+Replaces the default folder icon in mosaic view with a dynamic book-stack effect.
 
-### **2-mosaic-vertical-label-left.lua**
+    Thumbnail: Pulls a cover from the folder's contents. If the root is empty, it automatically searches subfolders.
 
-Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top. Folder tiles are left unlabelled.
-Configurable constants at the top of the file:
-- LABEL_ALPHA — opacity (default 0.80)
-- LABEL_FONT_SIZE — font size in points (default 16)
-- LABEL_PADDING — padding around the text in pixels (default 4)
+    Label: Displays the folder name clearly at the top of the "spine."
 
+📏 2-mosaic-vertical-label-left.lua
 
-### **2-mosaic-top-horizontal-label.lua**
+Overlays a sleek, vertical filename label (rotated 90°) on the left edge of book covers.
 
-Overlays a semi-transparent horizontal filename label(without file extension) at the top of each book cover in mosaic view, centred within the tile. 
-Configurable constants at the top of the file:
-- LABEL_ALPHA — opacity (default 0.75)
-- LABEL_FONT_SIZE — font size in points (default 14)
-- LABEL_PADDING — padding around the text in pixels (default 4)
+    Detail: Labels read bottom-to-top; folder tiles remain unlabelled for a clean look.
 
+    Configurable Constants:
 
-### **2-no-folder-up.lua**
+        LABEL_ALPHA: Opacity (Default: 0.80)
 
-Removes the ../ folder-up entry from the file browser in all display modes (classic, mosaic, and list), keeping the file list clean.
-Navigation up remains accessible via Long-press home button till nested folder menu pops up, mapping a tap-zone/gesture to the action, long pressing home button if "2-home-hold-go-up.lua" is also installed.
+        LABEL_FONT_SIZE: Font size in points (Default: 16)
 
+        LABEL_PADDING: Padding around text (Default: 4)
 
-### **2-home-hold-go-up.lua**
+🔝 2-mosaic-top-horizontal-label.lua
 
-Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
+Adds a semi-transparent horizontal label at the top-center of each book cover.
 
+    Configurable Constants:
 
-## **How to Install**
+        LABEL_ALPHA: Opacity (Default: 0.75)
 
-Save the patch(.lua file) by right clicking the desired one and selecting "save link as". 
+        LABEL_FONT_SIZE: Font size in points (Default: 14)
 
-Go to your Koreader folder:
-- Cervantes: /mnt/private/koreader
-- Kindle: koreader/
-- Kobo: .adds/koreader/
-- PocketBook: applications/koreader/
+        LABEL_PADDING: Padding around text (Default: 4)
 
-If "patches" folder doesnt exist create it, and just copy the .lua file to the folder.
+🧹 2-no-folder-up.lua & 🏠 2-home-hold-go-up.lua
 
-To disable open the wrench menu>More Tools>Patch Management>After Setup, and uncheck the patch you want disabled. Restart koreader.
-Disabling can also be done in explorer by adding .disabled extension to the file, resulting in ".lua.disabled"
+These patches work together to declutter your file browser:
 
-To uninstall just delete the file from the "patches" folder.
+    No-Folder-Up: Removes the ../ entry from all views for a cleaner list.
 
+    Home-Hold: Re-maps the Long-press Home action to navigate "Up" one level, replacing the default nested folders menu.
 
-<img width="1404" height="1872" alt="Home" src="https://github.com/user-attachments/assets/a8bed22a-0624-4151-a893-13d0af581988" />
-<img width="1404" height="1872" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
+📥 How to Install
+
+    Download: Right-click the desired .lua file and select "Save link as..."
+
+    Locate KOReader: Connect your device and find the directory:
+
+        Kindle: koreader/
+
+        Kobo: .adds/koreader/
+
+        PocketBook: applications/koreader/
+
+        Cervantes: /mnt/private/koreader
+
+    Deploy: Look for a folder named patches. If it doesn't exist, create it. Copy your .lua files inside.
+
+⚙️ Management & Uninstall
+
+    Toggle via UI: Go to Wrench Menu > More Tools > Patch Management > After Setup. Uncheck patches to disable them, then Restart KOReader.
+
+    Manual Disable: In your file explorer, rename the file from name.lua to name.lua.disabled.
+
+    Uninstall: Simply delete the .lua file from the patches folder.
+
+📸 Previews
+
+<p align="center">
+<img width="48%" alt="Home View" src="https://github.com/user-attachments/assets/a8bed22a-0624-4151-a893-13d0af581988" />
+<img width="48%" alt="In Folder View" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
+</p>
