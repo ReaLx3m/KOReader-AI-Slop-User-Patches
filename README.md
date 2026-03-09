@@ -19,7 +19,7 @@ To uninstall just delete the file from the "patches" folder.
 
 
 
-<img width="384" height="512" alt="Home" src="https://github.com/user-attachments/assets/a8bed22a-0624-4151-a893-13d0af581988" />
+<img width="384" height="512" alt="Home" src="https://github.com/user-attachments/assets/773c4e3c-fb08-465e-958c-dc16777606c7" />
 <img width="384" height="512" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
 
 ## **Patches Description**
@@ -60,6 +60,7 @@ https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.l
 
 - Removes the folder-up entry from the file browser in all display modes (classic, mosaic, and list), keeping the file list clean.
 - Navigation up remains accessible via Long-press home button till nested folder menu pops up, mapping a tap-zone/gesture to the action, long pressing home button if "2-home-hold-go-up.lua" is also installed.
+
 
 
 ### **2-home-hold-go-up.lua**
