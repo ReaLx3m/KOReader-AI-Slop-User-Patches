@@ -1,7 +1,7 @@
 
 ## **How to Install**
 
-### **Patches tested on Pocketbook Inkpad 3 Pro and KOReader 2025.10 Ghost.**
+### **Patches tested on KOReader 2025.10 Ghost.**
 
 Save the patch(.lua file) by right clicking the desired one and selecting "save link as". 
 
