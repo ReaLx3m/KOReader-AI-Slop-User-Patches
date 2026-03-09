@@ -1,6 +1,8 @@
 
 ## **How to Install**
 
+### **Patches tested on Pocketbook Inkpad 3 Pro and KOReader 2025.10 Ghost.**
+
 Save the patch(.lua file) by right clicking the desired one and selecting "save link as". 
 
 Go to your Koreader folder:
@@ -16,7 +18,7 @@ Disabling can also be done in explorer by adding .disabled extension to the file
 
 To uninstall just delete the file from the "patches" folder.
 
-### **Patches tested on Pocketbook Inkpad 3 Pro and KOReader 2025.10 Ghost.**
+
 
 
 <img width="384" height="512" alt="Home" src="https://github.com/user-attachments/assets/a8bed22a-0624-4151-a893-13d0af581988" />
