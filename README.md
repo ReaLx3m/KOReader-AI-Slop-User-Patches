@@ -1,7 +1,7 @@
 
 ## **Patches Description**
 
-###**2-multiview.lua**
+### **2-multiview.lua**
 
 Automatically switches the file browser display mode based on the contents of the folder you're browsing.
 Menu integration: Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet icon menu under Settings.
