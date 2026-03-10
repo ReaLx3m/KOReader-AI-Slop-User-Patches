@@ -24,7 +24,7 @@ To uninstall just delete the file from the "patches" folder.
 
 ## **Patches Description**
 
-### **2-multiview.lua**
+### **[2-multiview.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-multiview.lua)**
 
 Automatically switches the file browser display mode based on the contents of the folder you're browsing.
 
@@ -36,7 +36,7 @@ Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet 
 When you make changes to the Folder and/or File Modes, it might appear that the changes arent applied. If that happens you need to either press Home or access a different folder from your current one, for the views to refresh and show correctly from there on. Already have a version that fixes that and applies the changes on the fly, but is still not tested. Maybe ill release it maybe not, not a big annoyance as is i think. If you do want that version to try out, ask for it over at "Issues" tab. 
 
 
-### **2-folder-cover-stack-left-spine-label-top.lua**
+### **[2-folder-cover-stack-left-spine-label-top.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-folder-cover-stack-left-spine-label-top.lua)**
 
 - Replaces the default folder icon in mosaic view with a visual book-stack effect.
 - Adds a thumbnail pulled from the folders contents(book/image). If no books or images are present in the root of the folder it will pull the thumbnail from a subfolder.
@@ -46,30 +46,30 @@ When you make changes to the Folder and/or File Modes, it might appear that the 
 https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.lua was used as base. I added some functionality and made some cosmetic changes.
 
 
-### **2-mosaic-vertical-label-left.lua**
+### **[2-mosaic-vertical-label-left.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-mosaic-vertical-label-left.lua)**
 
 - Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top.
 
-### **2-mosaic-vertical-label-advanced.lua**
+### **[2-mosaic-vertical-label-advanced.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-mosaic-vertical-label-advanced.lua)**
 
 If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then go for this one. Added Settings sub-menu to the filing-cabinet icon menu on the top bar.
 - Position left or right
 - Text direction bottom to top or top to bottom
 - Label text pulled from filename or metadata. Metadata options are Title, Author-Title and Title-Author.
 
-### **2-mosaic-top-horizontal-label.lua**
+### **[2-mosaic-top-horizontal-label.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-mosaic-top-horizontal-label.lua)**
 
 - Overlays a horizontal filename label(without file extension) at the top of each book cover in mosaic view, centred within the tile. 
 
 
-### **2-no-folder-up.lua**
+### **[2-no-folder-up.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-no-folder-up.lua)**
 
 - Removes the folder-up entry from the file browser in all display modes (classic, mosaic, and list), keeping the file list clean.
 - Navigation up remains accessible via Long-press home button till nested folder menu pops up, mapping a tap-zone/gesture to the action, long pressing home button if "2-home-hold-go-up.lua" is also installed.
 
 
 
-### **2-home-hold-go-up.lua**
+### **[2-home-hold-go-up.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-home-hold-go-up.lua)**
 
 - Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
 
