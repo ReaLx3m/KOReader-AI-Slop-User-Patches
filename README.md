@@ -43,7 +43,7 @@ Ex. If you set min grid 2x2 and max grid 4x4, 1-4 items will display in 2x2, 5-9
 
 Will be unifying patches settings location going forward, so this one(and future updates of the rest of the patches) will have their settings in "AI Slop Settings" sub-menu of the filing cabinet icon menu. 
 
-Not thorughly tested, but on first look seems all is working fine. Will have the test-version designation for the time being.
+Not thorughly tested, but on first look seems all is working fine. Will have the test-version designation for the time being as it needs a bit of polishing.
 
 ### **[2-folder-cover-stack-left-spine-label-top.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-folder-cover-stack-left-spine-label-top.lua)**
 
