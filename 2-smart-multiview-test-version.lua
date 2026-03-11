@@ -212,7 +212,12 @@ local function applyModeForPath(fc, path)
     local mode   = get(prefix .. "_mode")
 
     if get("smart_grid_enabled") then
-        local n = countItems(path, has_dirs)
+        local n
+        if has_dirs then
+            n = countItems(path, true) + countItems(path, false)
+        else
+            n = countItems(path, false)
+        end
         if mode == "classic" or mode == nil or mode == "" then
             -- classic: interpolate items_per_page between min and max
             local min_i = get(prefix .. "_sg_classic_min_items")
