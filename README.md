@@ -39,7 +39,7 @@ When you make changes to the Folder and/or File Modes, it might appear that the 
 
 Does everything Multiview does, but adds "Smart Grid" setting. You set your min and max grid sizes and it decides the grid size based on number of sub-folders/files.
 
-Ex. If you set min grid 2x2 and max grid 4x4, 1-4 items will display in 2x2, 6-9 will display in 3x3, 9-16(and over 16) in 4x4.
+Ex. If you set min grid 2x2 and max grid 4x4, 1-4 items will display in 2x2, 5-9 will display in 3x3, 10-16(and over 16) in 4x4.
 
 Not thorughly tested, but on first look seems all is working fine. Will have the test-version designation for the time being.
 
