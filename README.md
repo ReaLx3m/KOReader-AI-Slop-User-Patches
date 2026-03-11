@@ -35,6 +35,13 @@ Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet 
 
 When you make changes to the Folder and/or File Modes, it might appear that the changes arent applied. If that happens you need to either press Home or access a different folder from your current one, for the views to refresh and show correctly from there on. Test version with fix available - [multiview-test-version-ignore-sdr-instant-view-change.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-multiview-test-version-ignore-sdr-instant-view-change.lua)
 
+### **[2-smart-multiview-test-version.lua]([https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-multiview.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-smart-multiview-test-version.lua)**
+
+Does everything Multiview does, but adds "Smart Grid" setting. You set your min and max grid sizes and it decides the grid size based on number of sub-folders/files.
+
+Ex. If you set min grid 2x2 and max grid 4x4, 1-4 items will display in 2x2, 6-9 will display in 3x3, 9-16(and over 16) in 4x4.
+
+Not thorughly tested, but on first look seems all is working fine. Will have the test-version designation for the time being.
 
 ### **[2-folder-cover-stack-left-spine-label-top.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-folder-cover-stack-left-spine-label-top.lua)**
 
