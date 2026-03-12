@@ -553,13 +553,15 @@ local function sgIncludeExcludeMenu(prefix, orient, fc)
     return items
 end
 
--- Sub-menu for one context (dirs or files) within one orientation.
-local function sgContextOrientMenu(prefix, ctx_label, orient, orient_label, default_min_c, default_min_r, default_max_c, default_max_r, fc)
+
+-- Build flat inline items for one context+orientation pair.
+local function sgInlineItems(prefix, ctx_label, orient, orient_label, default_min_c, default_min_r, default_max_c, default_max_r, fc)
     local p = prefix .. "_sg_" .. orient .. "_mosaic_"
     return {
         {
             text_func = function()
-                return "Mosaic min grid: " .. get(p .. "min_cols") .. "×" .. get(p .. "min_rows")
+                return ctx_label .. " " .. orient_label .. " min: "
+                    .. get(p .. "min_cols") .. "×" .. get(p .. "min_rows")
             end,
             keep_menu_open = true,
             callback = function(touchmenu_instance)
@@ -592,7 +594,8 @@ local function sgContextOrientMenu(prefix, ctx_label, orient, orient_label, defa
         },
         {
             text_func = function()
-                return "Mosaic max grid: " .. get(p .. "max_cols") .. "×" .. get(p .. "max_rows")
+                return ctx_label .. " " .. orient_label .. " max: "
+                    .. get(p .. "max_cols") .. "×" .. get(p .. "max_rows")
             end,
             keep_menu_open = true,
             callback = function(touchmenu_instance)
@@ -628,9 +631,9 @@ local function sgContextOrientMenu(prefix, ctx_label, orient, orient_label, defa
                 local min_c = get(p .. "min_cols"); local min_r = get(p .. "min_rows")
                 local max_c = get(p .. "max_cols"); local max_r = get(p .. "max_rows")
                 if min_c == max_c and min_r == max_r then
-                    return "Include/Exclude grids (none — min=max)"
+                    return ctx_label .. " " .. orient_label .. " grids (none — min=max)"
                 end
-                return "Include/Exclude grids"
+                return ctx_label .. " " .. orient_label .. " grids"
             end,
             enabled_func = function()
                 return not (get(p .. "min_cols") == get(p .. "max_cols")
@@ -640,73 +643,11 @@ local function sgContextOrientMenu(prefix, ctx_label, orient, orient_label, defa
                 return sgIncludeExcludeMenu(prefix, orient, fc)
             end,
         },
-        {
-            text_func = function()
-                return "Classic min items: " .. get(prefix .. "_sg_" .. orient .. "_classic_min_items")
-            end,
-            keep_menu_open = true,
-            callback = function(touchmenu_instance)
-                UIManager:show(SpinWidget:new{
-                    title_text    = ctx_label .. " " .. orient_label .. " classic min items",
-                    value         = get(prefix .. "_sg_" .. orient .. "_classic_min_items"),
-                    value_min = 1, value_max = 40, value_step = 1, default_value = 8,
-                    keep_shown_on_apply = true,
-                    callback = function(spin)
-                        set(prefix .. "_sg_" .. orient .. "_classic_min_items", spin.value)
-                        _last_path = nil; _last_has_dirs = nil
-                        touchmenu_instance:updateItems()
-                        if fc and get("enabled") and get("smart_grid_enabled") then
-                            applyModeForPath(fc, fc.path); fc:updateItems(1, true)
-                        end
-                    end,
-                })
-            end,
-        },
-        {
-            text_func = function()
-                return "Classic max items: " .. get(prefix .. "_sg_" .. orient .. "_classic_max_items")
-            end,
-            keep_menu_open = true,
-            callback = function(touchmenu_instance)
-                UIManager:show(SpinWidget:new{
-                    title_text    = ctx_label .. " " .. orient_label .. " classic max items",
-                    value         = get(prefix .. "_sg_" .. orient .. "_classic_max_items"),
-                    value_min = 1, value_max = 40, value_step = 1, default_value = 16,
-                    keep_shown_on_apply = true,
-                    callback = function(spin)
-                        set(prefix .. "_sg_" .. orient .. "_classic_max_items", spin.value)
-                        _last_path = nil; _last_has_dirs = nil
-                        touchmenu_instance:updateItems()
-                        if fc and get("enabled") and get("smart_grid_enabled") then
-                            applyModeForPath(fc, fc.path); fc:updateItems(1, true)
-                        end
-                    end,
-                })
-            end,
-        },
-    }
-end
-
--- One orientation sub-menu (Portrait or Landscape), with Folders and Files sub-menus.
-local function sgOrientMenu(orient, orient_label, fc)
-    return {
-        {
-            text = "Folders",
-            sub_item_table_func = function()
-                return sgContextOrientMenu("dirs",  "Folders", orient, orient_label, 3, 3, 4, 4, fc)
-            end,
-        },
-        {
-            text = "Files",
-            sub_item_table_func = function()
-                return sgContextOrientMenu("files", "Files",   orient, orient_label, 2, 2, 3, 3, fc)
-            end,
-        },
     }
 end
 
 local function smartGridMenu(fc)
-    return {
+    local t = {
         {
             text = "Smart Grid",
             checked_func = function() return get("smart_grid_enabled") == true end,
@@ -721,19 +662,108 @@ local function smartGridMenu(fc)
                 end
             end,
         },
-        {
-            text = "Portrait",
-            sub_item_table_func = function()
-                return sgOrientMenu("portrait", "Portrait", fc)
-            end,
-        },
-        {
-            text = "Landscape",
-            sub_item_table_func = function()
-                return sgOrientMenu("landscape", "Landscape", fc)
-            end,
-        },
+        -- ── Folders ───────────────────────────────────────────────────────────
+        { text = "── Folders ──", enabled_func = function() return false end, callback = function() end },
     }
+    for _, item in ipairs(sgInlineItems("dirs", "Folders", "portrait",  "portrait",  3, 3, 4, 4, fc)) do table.insert(t, item) end
+    for _, item in ipairs(sgInlineItems("dirs", "Folders", "landscape", "landscape", 3, 3, 4, 4, fc)) do table.insert(t, item) end
+    table.insert(t, {
+        text_func = function()
+            return "Folders classic min: " .. get("dirs_sg_portrait_classic_min_items")
+        end,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            UIManager:show(SpinWidget:new{
+                title_text    = "Folders classic min items",
+                value         = get("dirs_sg_portrait_classic_min_items"),
+                value_min = 1, value_max = 40, value_step = 1, default_value = 8,
+                keep_shown_on_apply = true,
+                callback = function(spin)
+                    set("dirs_sg_portrait_classic_min_items",  spin.value)
+                    set("dirs_sg_landscape_classic_min_items", spin.value)
+                    _last_path = nil; _last_has_dirs = nil
+                    touchmenu_instance:updateItems()
+                    if fc and get("enabled") and get("smart_grid_enabled") then
+                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                    end
+                end,
+            })
+        end,
+    })
+    table.insert(t, {
+        text_func = function()
+            return "Folders classic max: " .. get("dirs_sg_portrait_classic_max_items")
+        end,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            UIManager:show(SpinWidget:new{
+                title_text    = "Folders classic max items",
+                value         = get("dirs_sg_portrait_classic_max_items"),
+                value_min = 1, value_max = 40, value_step = 1, default_value = 16,
+                keep_shown_on_apply = true,
+                callback = function(spin)
+                    set("dirs_sg_portrait_classic_max_items",  spin.value)
+                    set("dirs_sg_landscape_classic_max_items", spin.value)
+                    _last_path = nil; _last_has_dirs = nil
+                    touchmenu_instance:updateItems()
+                    if fc and get("enabled") and get("smart_grid_enabled") then
+                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                    end
+                end,
+            })
+        end,
+    })
+    -- ── Files ─────────────────────────────────────────────────────────────────
+    table.insert(t, { text = "── Files ──", enabled_func = function() return false end, callback = function() end })
+    for _, item in ipairs(sgInlineItems("files", "Files", "portrait",  "portrait",  2, 2, 3, 3, fc)) do table.insert(t, item) end
+    for _, item in ipairs(sgInlineItems("files", "Files", "landscape", "landscape", 2, 2, 3, 3, fc)) do table.insert(t, item) end
+    table.insert(t, {
+        text_func = function()
+            return "Files classic min: " .. get("files_sg_portrait_classic_min_items")
+        end,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            UIManager:show(SpinWidget:new{
+                title_text    = "Files classic min items",
+                value         = get("files_sg_portrait_classic_min_items"),
+                value_min = 1, value_max = 40, value_step = 1, default_value = 8,
+                keep_shown_on_apply = true,
+                callback = function(spin)
+                    set("files_sg_portrait_classic_min_items",  spin.value)
+                    set("files_sg_landscape_classic_min_items", spin.value)
+                    _last_path = nil; _last_has_dirs = nil
+                    touchmenu_instance:updateItems()
+                    if fc and get("enabled") and get("smart_grid_enabled") then
+                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                    end
+                end,
+            })
+        end,
+    })
+    table.insert(t, {
+        text_func = function()
+            return "Files classic max: " .. get("files_sg_portrait_classic_max_items")
+        end,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            UIManager:show(SpinWidget:new{
+                title_text    = "Files classic max items",
+                value         = get("files_sg_portrait_classic_max_items"),
+                value_min = 1, value_max = 40, value_step = 1, default_value = 16,
+                keep_shown_on_apply = true,
+                callback = function(spin)
+                    set("files_sg_portrait_classic_max_items",  spin.value)
+                    set("files_sg_landscape_classic_max_items", spin.value)
+                    _last_path = nil; _last_has_dirs = nil
+                    touchmenu_instance:updateItems()
+                    if fc and get("enabled") and get("smart_grid_enabled") then
+                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                    end
+                end,
+            })
+        end,
+    })
+    return t
 end
 
 -- ── patch setUpdateItemTable ──────────────────────────────────────────────────
