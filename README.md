@@ -28,12 +28,11 @@ To uninstall just delete the file from the "patches" folder.
 
 Automatically switches the file browser display mode based on the contents of the folder you're browsing. Making it possible to have home menu and folders with sub-folders in classic view with many items per page, or in mosaic view with a large grid like 4x4, 5x5 etc. for better view of your library. And still enjoy large covers, ex. 2x2 or 3x3 mosaic view, when you access a folder with files(books).
 
-Adds a Multiview toggle and a Multiview Settings sub-menu to the filing-cabinet icon menu on the top bar.
+Added Settings sub-menu(AI Slop Settings) to the filing-cabinet icon menu on the top bar.
 - 2 modes(Folder Mode and File Mode), both modes are independently configurable via the Multiview Settings menu. You can choose any rows/columns configuration with "Mosaic With Covers" view mode and any number of items with "Classic" mode view.
 - Folders that contain sub-folders or mix of sub-folders and files will display in the mode you set in "Folder Mode", Classic mode is set as default.
 - Folders that contain only files will display in the mode you set in "File Mode", Mosaic mode with cover images is set as default.
 
-When you make changes to the Folder and/or File Modes, it might appear that the changes arent applied. If that happens you need to either press Home or access a different folder from your current one, for the views to refresh and show correctly from there on. Test version with fix available - [multiview-test-version-ignore-sdr-instant-view-change.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-multiview-test-version-ignore-sdr-instant-view-change.lua)
 
 ### **[2-smart-multiview-test-version.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-smart-multiview-test-version.lua)**
 
