@@ -61,7 +61,7 @@ https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.l
 
 ### **[2-mosaic-vertical-label-advanced.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-mosaic-vertical-label-advanced.lua)**
 
-If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then go for this one. Added Settings sub-menu to the filing-cabinet icon menu on the top bar.
+If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then go for this one. Added Settings sub-menu(AI Slop Settings) to the filing-cabinet icon menu on the top bar.
 - Position left or right
 - Text direction bottom to top or top to bottom
 - Label text pulled from filename or metadata. Metadata options are Title, Author-Title and Title-Author.
