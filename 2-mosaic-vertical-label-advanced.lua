@@ -150,7 +150,19 @@ local function findCoverEdges(bb, cell_x, cell_w, cell_y, cell_h)
         local c = bb:getPixel(cell_x + col, mid_y)
         if c and c:getR() < 250 then right_offset = cell_w - 1 - col; break end
     end
-    return left_offset, right_offset
+    -- also scan vertically at the cover's horizontal midpoint to find top/bottom
+    local mid_x = cell_x + math.floor(cell_w / 2)
+    local top_offset    = 0
+    local bottom_offset = 0
+    for row = 0, cell_h - 1 do
+        local c = bb:getPixel(mid_x, cell_y + row)
+        if c and c:getR() < 250 then top_offset = row; break end
+    end
+    for row = cell_h - 1, 0, -1 do
+        local c = bb:getPixel(mid_x, cell_y + row)
+        if c and c:getR() < 250 then bottom_offset = cell_h - 1 - row; break end
+    end
+    return left_offset, right_offset, top_offset, bottom_offset
 end
 
 -- ── core patch ────────────────────────────────────────────────────────────────
@@ -181,31 +193,31 @@ local function patchMosaicMenuItem(MosaicMenuItem)
         local alpha   = get("alpha")
 
         -- find cover edges so we can sit flush against the cover box
-        local left_off, right_off = findCoverEdges(bb, x, item_w, y, item_h)
+        local left_off, right_off, top_off, bottom_off = findCoverEdges(bb, x, item_w, y, item_h)
+
+        -- actual cover height (may be less than item_h in non-square grids)
+        local cover_y = y + top_off
+        local cover_h = item_h - top_off - bottom_off
+        if cover_h <= 0 then return end
 
         -- label_x: just outside the cover edge on the chosen side
         local label_x
         if pos == "right" then
-            -- right edge of cover = x + item_w - 1 - right_off
-            -- label starts immediately after: cover_right + 1 = x + item_w - right_off
-            -- but we need strip_w pixels; clamp to cell right boundary
-            label_x = x + (item_w - right_off)  -- first pixel after cover right edge
+            label_x = x + (item_w - right_off)
             if label_x + strip_w > x + item_w then
                 label_x = x + item_w - strip_w
             end
         else
-            -- left edge of cover = x + left_off
-            -- label sits immediately to the left: label_x = cover_left - strip_w
             label_x = x + left_off - strip_w
             if label_x < x then label_x = x end
         end
 
-        -- build label widget (unrotated: item_h wide × strip_w tall)
+        -- build label widget sized to actual cover height
         local text_widget = TextWidget:new{
             text      = name,
             face      = Font:getFace("cfont", fs),
             fgcolor   = Blitbuffer.COLOR_WHITE,
-            max_width = item_h - 2 * pad,
+            max_width = cover_h - 2 * pad,
         }
         local label = AlphaContainer:new{
             alpha = alpha,
@@ -213,26 +225,26 @@ local function patchMosaicMenuItem(MosaicMenuItem)
                 background = Blitbuffer.COLOR_BLACK,
                 bordersize = 0,
                 padding    = 0,
-                width      = item_h,
+                width      = cover_h,
                 height     = strip_w,
                 CenterContainer:new{
-                    dimen = Geom:new{ w = item_h, h = strip_w },
+                    dimen = Geom:new{ w = cover_h, h = strip_w },
                     text_widget,
                 },
             },
         }
 
         -- composite against real background pixels
-        local tmp = Blitbuffer.new(item_h, strip_w, bb:getType())
-        tmp:blitFrom(bb, 0, 0, label_x, y, item_h, strip_w)
+        local tmp = Blitbuffer.new(cover_h, strip_w, bb:getType())
+        tmp:blitFrom(bb, 0, 0, label_x, cover_y, cover_h, strip_w)
         label:paintTo(tmp, 0, 0)
         label:free()
 
-        -- rotate: 90° CCW = bottom→top (up), 270° CCW = top→bottom (down)
+        -- rotate and blit back
         local angle   = (get("direction") == "down") and 270 or 90
         local rotated = tmp:rotatedCopy(angle)
         tmp:free()
-        bb:blitFrom(rotated, label_x, y, 0, 0, strip_w, item_h)
+        bb:blitFrom(rotated, label_x, cover_y, 0, 0, strip_w, cover_h)
         rotated:free()
     end
 end
