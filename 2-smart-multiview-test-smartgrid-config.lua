@@ -202,6 +202,7 @@ end
 
 local _last_path
 local _last_has_dirs
+local _settings_changed = false
 
 local function applyMosaic(fc, mode, cp, rp, cl, rl)
     FileChooser.updateItems             = _mosaic_updateItems
@@ -246,8 +247,9 @@ local function applyModeForPath(fc, path)
     if not get("enabled") then return end
     if not setupUpvalues(fc) then return end
     local has_dirs = pathHasSubdirs(path)
-    if path == _last_path and has_dirs == _last_has_dirs then return end
+    if not _settings_changed and path == _last_path and has_dirs == _last_has_dirs then return end
     _last_path, _last_has_dirs = path, has_dirs
+    _settings_changed = false
     local prefix = has_dirs and "dirs" or "files"
     local mode   = get(prefix .. "_mode")
 
@@ -317,7 +319,7 @@ function FileChooser:switchItemTable(title, item_table, item_number, ...)
     if not _restore_page_pending then return end
     if self.path ~= _restore_for_path then return end
     _restore_page_pending, _restore_for_path = false, nil
-    _last_path = nil
+    _last_path = nil; _settings_changed = true
     applyModeForPath(self, self.path)
     local saved  = _saved_pages[self.path]
     if not saved then return end
@@ -413,7 +415,7 @@ local function gridEntry(label, prefix, orientation, fc)
                     -- Always re-apply regardless of whether values changed,
                     -- because the live-preview callback may have set wrong
                     -- grid values on FileChooser class for the other context.
-                    _last_path = nil
+                    _last_path = nil; _settings_changed = true
                     _last_has_dirs = nil
                     if fc and get("enabled") then
                         applyModeForPath(fc, fc.path)
@@ -440,12 +442,12 @@ local function contextSubMenu(prefix, section_label, fc)
             end,
             callback = function(touchmenu_instance)
                 set(prefix .. "_mode", mode_key)
-                _last_path = nil
+                _last_path = nil; _settings_changed = true
                 _last_has_dirs = nil
                 touchmenu_instance:updateItems()
                 if fc and get("enabled") then
                     applyModeForPath(fc, fc.path)
-                    fc:updateItems(1, true)
+                    fc.no_refresh_covers = nil; fc:updateItems()
                 end
             end,
         })
@@ -473,13 +475,13 @@ local function contextSubMenu(prefix, section_label, fc)
                 keep_shown_on_apply = true,
                 callback    = function(spin)
                     set(prefix .. "_items_per_page", spin.value)
-                    _last_path = nil
+                    _last_path = nil; _settings_changed = true
                     touchmenu_instance:updateItems()
                     if fc and get("enabled") then
                         local m = get(prefix .. "_mode")
                         if m == "classic" or m == nil or m == "" then
                             FileChooser.items_per_page = spin.value
-                            fc:updateItems(1, true)
+                            fc.no_refresh_covers = nil; fc:updateItems()
                         end
                     end
                 end,
@@ -534,12 +536,14 @@ local function sgIncludeExcludeMenu(prefix, orient, fc)
                 callback = function(touchmenu_instance)
                     -- toggle: nil → true (exclude), true → nil (include)
                     set(key, get(key) ~= true and true or nil)
-                    _last_path = nil
+                    _last_path = nil; _settings_changed = true
                     _last_has_dirs = nil
                     touchmenu_instance:updateItems()
                     if fc and get("enabled") and get("smart_grid_enabled") then
-                        applyModeForPath(fc, fc.path)
-                        fc:updateItems(1, true)
+                        UIManager:nextTick(function()
+                            applyModeForPath(fc, fc.path)
+                            fc.no_refresh_covers = nil; fc:updateItems()
+                        end)
                     end
                 end,
             })
@@ -579,14 +583,16 @@ local function sgInlineItems(prefix, ctx_label, orient, orient_label, default_mi
                     right_min = 1, right_max = 8, right_default = default_min_r,
                     right_precision = "%01d",
                     keep_shown_on_apply = true,
-                    callback = function(lv, rv) cur_cols = lv; cur_rows = rv end,
-                    close_callback = function()
+                    callback = function(lv, rv)
+                        cur_cols = lv; cur_rows = rv
                         set(p .. "min_cols", cur_cols)
                         set(p .. "min_rows", cur_rows)
-                        _last_path = nil; _last_has_dirs = nil
+                        _last_path = nil; _last_has_dirs = nil; _settings_changed = true
                         if fc and get("enabled") and get("smart_grid_enabled") then
-                            applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                            applyModeForPath(fc, fc.path); fc.no_refresh_covers = nil; fc:updateItems()
                         end
+                    end,
+                    close_callback = function()
                         touchmenu_instance:updateItems()
                     end,
                 })
@@ -613,14 +619,16 @@ local function sgInlineItems(prefix, ctx_label, orient, orient_label, default_mi
                     right_min = 1, right_max = 8, right_default = default_max_r,
                     right_precision = "%01d",
                     keep_shown_on_apply = true,
-                    callback = function(lv, rv) cur_cols = lv; cur_rows = rv end,
-                    close_callback = function()
+                    callback = function(lv, rv)
+                        cur_cols = lv; cur_rows = rv
                         set(p .. "max_cols", cur_cols)
                         set(p .. "max_rows", cur_rows)
-                        _last_path = nil; _last_has_dirs = nil
+                        _last_path = nil; _last_has_dirs = nil; _settings_changed = true
                         if fc and get("enabled") and get("smart_grid_enabled") then
-                            applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                            applyModeForPath(fc, fc.path); fc.no_refresh_covers = nil; fc:updateItems()
                         end
+                    end,
+                    close_callback = function()
                         touchmenu_instance:updateItems()
                     end,
                 })
@@ -653,12 +661,14 @@ local function smartGridMenu(fc)
             checked_func = function() return get("smart_grid_enabled") == true end,
             callback = function(touchmenu_instance)
                 set("smart_grid_enabled", not get("smart_grid_enabled"))
-                _last_path = nil
+                _last_path = nil; _settings_changed = true
                 _last_has_dirs = nil
                 touchmenu_instance:updateItems()
                 if fc and get("enabled") then
-                    applyModeForPath(fc, fc.path)
-                    fc:updateItems(1, true)
+                    UIManager:nextTick(function()
+                        applyModeForPath(fc, fc.path)
+                        fc.no_refresh_covers = nil; fc:updateItems()
+                    end)
                 end
             end,
         },
@@ -681,10 +691,10 @@ local function smartGridMenu(fc)
                 callback = function(spin)
                     set("dirs_sg_portrait_classic_min_items",  spin.value)
                     set("dirs_sg_landscape_classic_min_items", spin.value)
-                    _last_path = nil; _last_has_dirs = nil
+                    _last_path = nil; _last_has_dirs = nil; _settings_changed = true
                     touchmenu_instance:updateItems()
                     if fc and get("enabled") and get("smart_grid_enabled") then
-                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                        applyModeForPath(fc, fc.path); fc.no_refresh_covers = nil; fc:updateItems()
                     end
                 end,
             })
@@ -704,10 +714,10 @@ local function smartGridMenu(fc)
                 callback = function(spin)
                     set("dirs_sg_portrait_classic_max_items",  spin.value)
                     set("dirs_sg_landscape_classic_max_items", spin.value)
-                    _last_path = nil; _last_has_dirs = nil
+                    _last_path = nil; _last_has_dirs = nil; _settings_changed = true
                     touchmenu_instance:updateItems()
                     if fc and get("enabled") and get("smart_grid_enabled") then
-                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                        applyModeForPath(fc, fc.path); fc.no_refresh_covers = nil; fc:updateItems()
                     end
                 end,
             })
@@ -731,10 +741,10 @@ local function smartGridMenu(fc)
                 callback = function(spin)
                     set("files_sg_portrait_classic_min_items",  spin.value)
                     set("files_sg_landscape_classic_min_items", spin.value)
-                    _last_path = nil; _last_has_dirs = nil
+                    _last_path = nil; _last_has_dirs = nil; _settings_changed = true
                     touchmenu_instance:updateItems()
                     if fc and get("enabled") and get("smart_grid_enabled") then
-                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                        applyModeForPath(fc, fc.path); fc.no_refresh_covers = nil; fc:updateItems()
                     end
                 end,
             })
@@ -754,10 +764,10 @@ local function smartGridMenu(fc)
                 callback = function(spin)
                     set("files_sg_portrait_classic_max_items",  spin.value)
                     set("files_sg_landscape_classic_max_items", spin.value)
-                    _last_path = nil; _last_has_dirs = nil
+                    _last_path = nil; _last_has_dirs = nil; _settings_changed = true
                     touchmenu_instance:updateItems()
                     if fc and get("enabled") and get("smart_grid_enabled") then
-                        applyModeForPath(fc, fc.path); fc:updateItems(1, true)
+                        applyModeForPath(fc, fc.path); fc.no_refresh_covers = nil; fc:updateItems()
                     end
                 end,
             })
@@ -817,13 +827,13 @@ function FileManagerMenu:setUpdateItemTable()
                     end,
                     callback = function(touchmenu_instance)
                         set("enabled", not get("enabled"))
-                        _last_path = nil
+                        _last_path = nil; _settings_changed = true
                         touchmenu_instance:updateItems()
                         if fc then
                             if get("enabled") then
                                 applyModeForPath(fc, fc.path)
                             end
-                            fc:updateItems(1, true)
+                            fc.no_refresh_covers = nil; fc:updateItems()
                         end
                     end,
                 },
