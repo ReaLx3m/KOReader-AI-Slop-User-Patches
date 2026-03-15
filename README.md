@@ -72,7 +72,8 @@ If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then 
 
 Evolution of Vertical label advanced.
 
-
+<img width="384" height="512" alt="Real books 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Real%20books%201.png" />
+<img width="384" height="512" alt="Real books 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Real%20books%202.png" />
 
 
 Styled to look like a physical book.
