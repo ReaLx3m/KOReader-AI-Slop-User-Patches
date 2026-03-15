@@ -34,15 +34,14 @@ Added Settings sub-menu(AI Slop Settings) to the filing-cabinet icon menu on the
 - Folders that contain only files will display in the mode you set in "File Mode", Mosaic mode with cover images is set as default.
 
 
-### **[2-smart-multiview-test-version.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-smart-multiview-test-version.lua)**
+### **[2-multiview-smart.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-multiview-smart.lua)**
 
-Does everything Multiview does, but adds "Smart Grid" setting. You set your min and max grid sizes and it decides the grid size based on number of sub-folders/files.
+Does everything Multiview does, but adds "Smart Grid" setting. You set your min and max grid sizes and it decides the grid size based on number of sub-folders/files. 
 
-Ex. If you set min grid 2x2 and max grid 4x4, 1-4 items will display in 2x2, 5-9 will display in 3x3, 10-16(and over 16) in 4x4.
+Ex. If for portrait orientation you set min grid 2x2 and max grid 4x4: 1-4 items will display in 2x2, 5-6 will display in 3x2, 7-9 will display in 3x3, 10-12 in 4x3. 13-16(and over 16) in 4x4. You can uncheck unwanted inbetween grids in the grids settings sub-menu.
 
-Will be unifying patches settings location going forward, so this one(and future updates of the rest of the patches) will have their settings in "AI Slop Settings" sub-menu of the filing cabinet icon menu. 
+Will be unifying patches settings location going forward, so this one(and future updates of the rest of the patches) will have their settings in "AI Slop Settings" sub-menu of the browser menu(filing cabinet icon). 
 
-Not thorughly tested, but on first look seems all is working fine. Will have the test-version designation for the time being as it needs a bit of polishing.
 
 ### **[2-folder-cover-stack-left-spine-label-top.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-folder-cover-stack-left-spine-label-top.lua)**
 
