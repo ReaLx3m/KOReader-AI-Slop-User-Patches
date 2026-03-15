@@ -90,7 +90,7 @@ local function patchMosaicMenuItem(MosaicMenuItem)
         local cover_h = item_h - top_off - bottom_off
         if cover_h <= 0 then return end
 
-        -- Label box: cover_h wide x strip_w tall (before 90° rotation).
+        local cover_x = x + cover_left
         local text_widget = TextWidget:new{
             text      = name,
             face      = Font:getFace("cfont", LABEL_FONT_SIZE),
@@ -117,9 +117,14 @@ local function patchMosaicMenuItem(MosaicMenuItem)
         local label_x = x + cover_left - strip_w
         if label_x < x then label_x = x end
 
-        -- Composite against background at label's actual position.
+        -- Composite against left edge of cover (vertical strip).
         local tmp = Blitbuffer.new(cover_h, strip_w, bb:getType())
-        tmp:blitFrom(bb, 0, 0, label_x, cover_y, cover_h, strip_w)
+        local src = Blitbuffer.new(strip_w, cover_h, bb:getType())
+        src:blitFrom(bb, 0, 0, cover_x, cover_y, strip_w, cover_h)
+        local src_rot = src:rotatedCopy(270)
+        src:free()
+        tmp:blitFrom(src_rot, 0, 0, 0, 0, cover_h, strip_w)
+        src_rot:free()
         label:paintTo(tmp, 0, 0)
         label:free()
 
