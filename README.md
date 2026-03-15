@@ -18,9 +18,10 @@ To uninstall just delete the file from the "patches" folder.
 
 
 
-
-<img width="384" height="512" alt="Home" src="https://github.com/user-attachments/assets/773c4e3c-fb08-465e-958c-dc16777606c7" />
-<img width="384" height="512" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
+<p float="left">
+<img width="360" height="480" alt="Home" src="https://github.com/user-attachments/assets/773c4e3c-fb08-465e-958c-dc16777606c7" />
+<img width="360" height="480" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
+</p>
 
 ## **Patches Description**
 
@@ -72,9 +73,10 @@ If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then 
 
 Evolution of Vertical label advanced.
 
-<img width="384" height="512" alt="Real books 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Real%20books%201.png" />
-<img width="384" height="512" alt="Real books 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Real%20books%202.png" />
-
+<p float="left">
+<img width="360" height="480" alt="Real books 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Real%20books%201.png" />
+<img width="360" height="480" alt="Real books 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Real%20books%202.png" />
+</p>
 
 Styled to look like a physical book.
 The label displays a vertical strip of the cover's own artwork as background. Text is painted at full opacity on top, with an adjustable lean. Both the top and bottom of the label are cut at angles with a subtle convex curve, and a stack of horizontal lines above the cover that suggest page count - their count determined dynamically by the book's page count.
