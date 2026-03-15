@@ -68,6 +68,31 @@ If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then 
 
 - Overlays a horizontal filename label(without file extension) at the top of each book cover in mosaic view, centred within the tile. 
 
+### **[2-real-books.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-real-books.lua)**
+
+Evolution of Vertical label advanced.
+
+
+
+
+Styled to look like a physical book.
+The label displays a vertical strip of the cover's own artwork as background. Text is painted at full opacity on top, with an adjustable lean. Both the top and bottom of the label are cut at angles with a subtle convex curve, and a stack of horizontal lines above the cover that suggest page count - their count determined dynamically by the book's page count.
+
+Features:
+
+- Spine art sampled from the book's left vertical edge and stretched to fill the spine
+- Configurable opacity, text style (white on black / black on white), font face and size(10-16)
+- Dynamic page-edge lines: count scales with page count via configurable thresholds, with per-tier enable/disable toggles
+- Page count sourced from metadata, by adding p654(or any other number) at the end of filename to represent the page count, or estimated from file size(user configurable values) as fallback.
+- Supports up to 10 line tiers (2–10 lines) simulating pages to represent book thickness, 6 by default. Once you make a change in the line tiers, exit the menu and enter it again so the settings for selected tiers are shown. If you set over 6 lines youll most likely need to reduce line thickness to 1px so the lines dont overlap the cover on top. 
+- Settings accessible under Settings> AI Slop Settings> Real Books
+
+For automating adding pagecount argument(p654 etc.) at the end of the file you can use Calibre, follow [JoshuaCant's guide](https://github.com/joshuacant/ProjectTitle/wiki/Configure-Calibre-Page-Counts)
+
+Looks better with [alternative reading status icons](https://github.com/SeriousHornet/KOReader.patches/blob/main/2-new-status-icons.lua), default ones break immersion imo.
+
+
+
 
 ### **[2-no-folder-up.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-no-folder-up.lua)**
 
