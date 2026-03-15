@@ -1,7 +1,7 @@
 
 ## **How to Install**
 
-Save the patch(.lua file) by right clicking the desired one and selecting "save link as". 
+Save the patch(.lua file) by clicking the desired one and selecting "Download raw file". 
 
 Go to your Koreader folder:
 - Cervantes: /mnt/private/koreader
