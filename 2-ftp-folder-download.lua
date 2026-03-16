@@ -4,6 +4,12 @@
     Long-press any folder in the FTP browser to download it recursively.
     Settings exposed under:  Settings → AI Slop Settings → FTP Folder Download
 
+    Improvements over base version:
+      - Uses MLSD for directory listing (RFC 3659, unambiguous type detection)
+        with automatic fallback to LIST if server does not support MLSD
+      - File downloads pipe directly to disk via ltn12.sink.file instead of
+        buffering the entire file in memory first
+
     Install as:  <koreader>/patches/2-ftp-folder-download.lua
 --]]
 
@@ -40,63 +46,40 @@ local function parseAddress(address)
     return bare, nil
 end
 
-local function ftpList(host, port, username, password, path)
-    local ltn12      = require("ltn12")
-    local socket_ftp = require("socket.ftp")
-    if not path:match("/$") then path = path .. "/" end
-    local t = {}
-    local params = {
+local function baseParams(host, port, username, password)
+    local p = {
         host     = host,
-        user     = username ~= "" and username or nil,
-        password = username ~= "" and password or nil,
-        path     = path,
+        user     = (username and username ~= "") and username or nil,
+        password = (username and username ~= "") and (password or "") or nil,
         type     = "i",
-        command  = "list",
-        sink     = ltn12.sink.table(t),
     }
-    if port then params.port = port end
-    logger.info("[ftp-folder-dl] LIST", host, path)
-    local ok, err = socket_ftp.get(params)
-    if not ok then return nil, err end
-    return table.concat(t)
+    if port then p.port = port end
+    return p
 end
 
-local function ftpGetFile(host, port, username, password, path)
-    local ltn12      = require("ltn12")
-    local socket_ftp = require("socket.ftp")
-    local t = {}
-    local params = {
-        host     = host,
-        user     = username ~= "" and username or nil,
-        password = username ~= "" and password or nil,
-        path     = path,
-        type     = "i",
-        sink     = ltn12.sink.table(t),
-    }
-    if port then params.port = port end
-    local ok, err = socket_ftp.get(params)
-    if not ok then return nil, err end
-    return table.concat(t)
-end
-
-local function parseListing(raw)
+-- ── MLSD listing (RFC 3659) ───────────────────────────────────────────────────
+-- Returns {name, is_dir} list, or nil if server does not support MLSD.
+-- MLSD lines look like:
+--   Type=dir;Modify=20250101120000;UNIX.mode=0755; Some Folder Name
+--   Type=file;Size=12345;Modify=20250101120000; file.cbz
+local function parseMlsd(raw)
     local entries = {}
     for line in (raw or ""):gmatch("[^\r\n]+") do
-        -- Unix format: drwxr-xr-x ... name
-        local flag, name = line:match(
-            "^([dl%-][rwxsStT%-]+)%s+%S+%s+%S+%s+%S+%s+%S+%s+%S+%s+%S+%s+%S+%s+(.+)$")
-        if name and name ~= "." and name ~= ".." then
-            table.insert(entries, { name = name, is_dir = flag:sub(1,1) == "d" })
-        else
-            -- Windows IIS <DIR>: MM-DD-YY  HH:MMAM/PM  <DIR>  name
-            local win_dir = line:match("^%d+%-%d+%-%d+%s+%d+:%d+%a+%s+<DIR>%s+(.+)$")
-            if win_dir and win_dir ~= "." and win_dir ~= ".." then
-                table.insert(entries, { name = win_dir, is_dir = true })
-            else
-                -- Windows IIS file: MM-DD-YY  HH:MMAM/PM  size  name
-                local win_file = line:match("^%d+%-%d+%-%d+%s+%d+:%d+%a+%s+%d+%s+(.+)$")
-                if win_file then
-                    table.insert(entries, { name = win_file, is_dir = false })
+        -- Split on first space that separates facts from name
+        local facts, name = line:match("^([^%s]+)%s+(.+)$")
+        if facts and name then
+            name = name:match("^%s*(.-)%s*$")
+            if name ~= "" and name ~= "." and name ~= ".." then
+                local type_val = facts:match("[Tt]ype=([^;]+)")
+                if type_val then
+                    type_val = type_val:lower()
+                    if type_val == "dir" or type_val == "cdir" or type_val == "pdir" then
+                        if name ~= "." and name ~= ".." then
+                            table.insert(entries, { name = name, is_dir = true })
+                        end
+                    elseif type_val == "file" or type_val == "os.unix=symlink" then
+                        table.insert(entries, { name = name, is_dir = false })
+                    end
                 end
             end
         end
@@ -104,19 +87,135 @@ local function parseListing(raw)
     return entries
 end
 
+local function ftpMlsd(host, port, username, password, path)
+    local ltn12      = require("ltn12")
+    local socket_ftp = require("socket.ftp")
+    if not path:match("/$") then path = path .. "/" end
+    local t = {}
+    local p = baseParams(host, port, username, password)
+    p.path    = path
+    p.command = "mlsd"
+    p.sink    = ltn12.sink.table(t)
+    logger.info("[ftp-folder-dl] MLSD", host, path)
+    local ok, err = socket_ftp.get(p)
+    if not ok then return nil, err end
+    return table.concat(t)
+end
+
+-- ── LIST listing (universal fallback) ────────────────────────────────────────
+-- Handles Unix long format and Windows IIS format.
+local function parseList(raw)
+    local entries = {}
+    for line in (raw or ""):gmatch("[^\r\n]+") do
+        -- Unix long format: drwxr-xr-x 1 owner group size month day time name
+        local flag, name = line:match(
+            "^([dl%-][rwxsStTx%-]+)%s+%S+%s+%S+%s+%S+%s+%S+%s+%S+%s+%S+%s+%S+%s+(.+)$")
+        if flag and name then
+            name = name:match("^%s*(.-)%s*$")
+            if name ~= "" and name ~= "." and name ~= ".." then
+                table.insert(entries, { name = name, is_dir = flag:sub(1,1) == "d" })
+            end
+        else
+            -- Windows IIS <DIR>: MM-DD-YY  HH:MMAM/PM  <DIR>  name
+            local win_dir = line:match("^%d+%-%d+%-%d+%s+%d+:%d+%a+%s+<DIR>%s+(.+)$")
+            if win_dir then
+                win_dir = win_dir:match("^%s*(.-)%s*$")
+                if win_dir ~= "" and win_dir ~= "." and win_dir ~= ".." then
+                    table.insert(entries, { name = win_dir, is_dir = true })
+                end
+            else
+                -- Windows IIS file: MM-DD-YY  HH:MMAM/PM  size  name
+                local win_file = line:match("^%d+%-%d+%-%d+%s+%d+:%d+%a+%s+%d+%s+(.+)$")
+                if win_file then
+                    win_file = win_file:match("^%s*(.-)%s*$")
+                    if win_file ~= "" then
+                        table.insert(entries, { name = win_file, is_dir = false })
+                    end
+                end
+            end
+        end
+    end
+    return entries
+end
+
+local function ftpList(host, port, username, password, path)
+    local ltn12      = require("ltn12")
+    local socket_ftp = require("socket.ftp")
+    if not path:match("/$") then path = path .. "/" end
+    local t = {}
+    local p = baseParams(host, port, username, password)
+    p.path    = path
+    p.command = "list"
+    p.sink    = ltn12.sink.table(t)
+    logger.info("[ftp-folder-dl] LIST", host, path)
+    local ok, err = socket_ftp.get(p)
+    if not ok then return nil, err end
+    return table.concat(t)
+end
+
+-- ── Combined listing: MLSD first, fall back to LIST ──────────────────────────
+-- Cache whether MLSD works per host so we don't retry failed MLSD every folder
+local _mlsd_supported = {}
+
+local function ftpListEntries(host, port, username, password, path)
+    local host_key = host .. ":" .. tostring(port)
+
+    if _mlsd_supported[host_key] ~= false then
+        local raw, err = ftpMlsd(host, port, username, password, path)
+        if raw then
+            local entries = parseMlsd(raw)
+            _mlsd_supported[host_key] = true
+            return entries
+        else
+            logger.info("[ftp-folder-dl] MLSD not supported, falling back to LIST:", err)
+            _mlsd_supported[host_key] = false
+        end
+    end
+
+    local raw, err = ftpList(host, port, username, password, path)
+    if not raw then return nil, err end
+    return parseList(raw)
+end
+
+-- ── File download: pipe directly to disk ─────────────────────────────────────
+local function ftpGetFile(host, port, username, password, remote_path, local_path)
+    local ltn12      = require("ltn12")
+    local socket_ftp = require("socket.ftp")
+
+    local f, err = io.open(local_path, "wb")
+    if not f then
+        return false, "cannot open local file: " .. tostring(err)
+    end
+
+    local p = baseParams(host, port, username, password)
+    p.path = remote_path
+    p.sink = ltn12.sink.file(f)  -- pipes chunks directly to disk, f closed by ltn12
+
+    local ok, dl_err = socket_ftp.get(p)
+    if not ok then
+        -- Clean up partial file on failure
+        pcall(function() f:close() end)
+        pcall(function() os.remove(local_path) end)
+        return false, dl_err
+    end
+    return true
+end
+
+-- ── Recursive folder download ─────────────────────────────────────────────────
+
 local function downloadFolder(host, port, username, password, remote_path, local_path)
     local lfs = require("libs/libkoreader-lfs")
     local ok_count, fail_count = 0, 0
 
     if not lfs.attributes(local_path, "mode") then lfs.mkdir(local_path) end
 
-    local listing, err = ftpList(host, port, username, password, remote_path)
-    if not listing then
-        logger.warn("[ftp-folder-dl] LIST failed:", remote_path, err)
+    local entries, err = ftpListEntries(host, port, username, password, remote_path)
+    if not entries then
+        logger.warn("[ftp-folder-dl] listing failed:", remote_path, err)
         return 0, 1
     end
 
-    for _, entry in ipairs(parseListing(listing)) do
+    for _, entry in ipairs(entries) do
         local r_child = remote_path:gsub("/$", "") .. "/" .. entry.name
         local l_child = local_path .. "/" .. entry.name
 
@@ -131,17 +230,10 @@ local function downloadFolder(host, port, username, password, remote_path, local
                 ok_count = ok_count + 1
             else
                 logger.info("[ftp-folder-dl] GET", r_child)
-                local content, dl_err = ftpGetFile(host, port, username, password, r_child)
-                if content then
-                    local f = io.open(l_child, "wb")
-                    if f then
-                        f:write(content)
-                        f:close()
-                        ok_count = ok_count + 1
-                    else
-                        logger.warn("[ftp-folder-dl] write failed:", l_child)
-                        fail_count = fail_count + 1
-                    end
+                local ok_dl, dl_err = ftpGetFile(host, port, username, password,
+                                                  r_child, l_child)
+                if ok_dl then
+                    ok_count = ok_count + 1
                 else
                     logger.warn("[ftp-folder-dl] GET failed:", r_child, dl_err)
                     fail_count = fail_count + 1
@@ -200,6 +292,9 @@ local function doFolderDownload(item, address, username, password)
             })
             UIManager:forceRePaint()
 
+            -- Reset MLSD cache for this session so a fresh attempt is made
+            _mlsd_supported = {}
+
             local pok, a, b = xpcall(
                 function()
                     return downloadFolder(host, port, username, password,
@@ -247,7 +342,6 @@ local FileManagerMenuOrder = require("ui/elements/filemanager_menu_order")
 
 local orig_setUpdateItemTable = FileManagerMenu.setUpdateItemTable
 function FileManagerMenu:setUpdateItemTable()
-    -- Inject "ai_slop_settings" into the Settings tab once
     if type(FileManagerMenuOrder.filemanager_settings) == "table" then
         local found = false
         for _, k in ipairs(FileManagerMenuOrder.filemanager_settings) do
@@ -258,7 +352,6 @@ function FileManagerMenu:setUpdateItemTable()
         end
     end
 
-    -- Create the parent "AI Slop Settings" entry if not already created by another patch
     if not self.menu_items.ai_slop_settings then
         self.menu_items.ai_slop_settings = {
             text = "AI Slop Settings",
@@ -266,7 +359,6 @@ function FileManagerMenu:setUpdateItemTable()
         }
     end
 
-    -- Guard against duplicate injection
     local already = false
     for _, item in ipairs(self.menu_items.ai_slop_settings.sub_item_table) do
         if item._ftp_folder_dl_entry then already = true; break end
@@ -279,7 +371,8 @@ function FileManagerMenu:setUpdateItemTable()
             sub_item_table = {
                 {
                     text_func = function()
-                        return get("enabled") and "FTP Folder Download: enabled" or "FTP Folder Download: disabled"
+                        return get("enabled") and "FTP Folder Download: enabled"
+                                               or "FTP Folder Download: disabled"
                     end,
                     checked_func = function() return get("enabled") end,
                     callback = function(tmi)
@@ -290,16 +383,12 @@ function FileManagerMenu:setUpdateItemTable()
                 {
                     text = "On existing file: Skip",
                     checked_func = function() return get("on_conflict") == "skip" end,
-                    callback = function()
-                        set("on_conflict", "skip")
-                    end,
+                    callback = function() set("on_conflict", "skip") end,
                 },
                 {
                     text = "On existing file: Overwrite",
                     checked_func = function() return get("on_conflict") == "overwrite" end,
-                    callback = function()
-                        set("on_conflict", "overwrite")
-                    end,
+                    callback = function() set("on_conflict", "overwrite") end,
                 },
             },
         })
