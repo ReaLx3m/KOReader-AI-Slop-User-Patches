@@ -112,6 +112,8 @@ Looks better with [alternative reading status icons](https://github.com/SeriousH
 
 Enables full folder download via the built in FTP client. No progress display, so depending on the size/number of files youre transfering and the speed of your WiFi connection and/or reader nand/sd card write speed, it might take a while, so be patient.
 
+- Long press on folder to call on download dialogue.
+
 Settings exposed under AI Slop Settings> FTP Folder Download. Choice between overwrite or skip existing files, default is skip. Tested with Windows IIS FTP server, but Unix based ones should work fine too.
 
 
