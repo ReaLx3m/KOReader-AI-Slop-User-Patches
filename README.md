@@ -108,5 +108,12 @@ Looks better with [alternative reading status icons](https://github.com/SeriousH
 
 - Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
 
+### **[2-ftp-folder-download.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-folder-download.lua)
+
+Enables full folder download via the built in FTP client. No progress display, so depending on the size/number of files youre transfering and the speed of your WiFi connection and/or reader nand/sd card write speed, it might take a while, so be patient.
+
+Settings exposed under AI Slop Settings> FTP Folder Download. Choice between overwrite or skip existing files, default is skip. Tested with Windows IIS FTP server, but Unix based ones should work fine too.
+
+
 ### **Patches tested on KOReader 2025.10 Ghost.**
 
