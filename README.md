@@ -115,33 +115,37 @@ If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then 
 ### **[2-ftp-folder-download-nlst-size](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-folder-download-nlst-size.lua)**
 Adds a full-featured download manager to the built-in FTP browser.
 
-NLST to retrieve entry names, then SIZE probe on a single TCP connection to determine file vs directory — reliable for dotted folder names (ex. Vol.1)
+NLST to retrieve entry names, then SIZE probe on a single TCP connection to determine file vs directory - reliable for dotted folder names (ex. Vol.1)
 
 - ▶ prefix on folders for visual distinction
-- Natural sorting — 1, 2, 10 instead of 1, 10, 2 available in settings(on by default).
+- Natural sorting - 1, 2, 10 instead of 1, 10, 2 available in settings(on by default).
 
 
 Long-press any folder or file to open a paginated selection dialog. If folder is long-pressed you get a selection from its contents(1 level deep), if file is long pressed you get a selection from the contents of the parent folder(folder youre currently in)
 
 - Tap items to check/uncheck individually
 
-- All / None — tap to check/uncheck items on current page, long-press to check/uncheck on all pages
+- All / None - tap to check/uncheck items on current page, long-press to check/uncheck on all pages
 
 - Page indicator is tappable, you can enter any page number directly
 
 
 Download
 
-- Files streamed directly to disk — no memory buffering
+- Files streamed directly to disk - no memory buffering
 - Recursive subfolder download
 - Per-file progress throughout
-- Skip or overwrite existing files selectable in settings menu
+- Silent skip or overwrite existing files selectable in settings menu
 
 Settings available under Browser Settings> AI Slop Settings> FTP Folder Download
 
 ### **[2-ftp-folder-download-mlsd-list](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-folder-download-mlsd-list.lua)**
 
-Same as 2-ftp-folder-download-nlst-size functionality wise, but bit faster at expense of reduced compatibility with old servers. If FTP servers you use dont work with this one, use 2-ftp-folder-download-nlst-size.
+Same as 2-ftp-folder-download-nlst-size functionality wise, but faster at expense of bit reduced compatibility with old servers. If FTP servers you use dont work with this one, use 2-ftp-folder-download-nlst-size.
+
+- MLSD as primary listing method - folder detection based on explicit metadata, not filename heuristics
+- Dotted folder names (ex. Vol.1) correctly identified as folders
+- LIST fallback using a Lua port of [D.J. Bernstein's ftpparse](https://cr.yp.to/ftpparse.html), covering 9 formats: EPLF, UNIX ls, Microsoft FTP Service, Windows NT FTP Server, VMS, WFTPD, NetPresenz, NetWare, MSDOS
 
 ### **Patches tested on KOReader 2025.10 Ghost.**
 
