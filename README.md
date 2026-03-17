@@ -111,14 +111,37 @@ If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then 
 
 - Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
 
-### **[2-ftp-folder-download.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-folder-download.lua)**
 
-Enables full folder download via the built in FTP client. Doesnt count files in folder/subfolders(takes too long on most e-ink devices), but displays the number you already downloaded so you know theres progress.
+### **[2-ftp-folder-download-nlst-size](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-folder-download-nlst-size.lua)**
+Adds a full-featured download manager to the built-in FTP browser.
 
-- Long press on folder to call on download dialogue.
+NLST to retrieve entry names, then SIZE probe on a single TCP connection to determine file vs directory — reliable for dotted folder names (ex. Vol.1)
 
-Settings exposed under AI Slop Settings> FTP Folder Download. Choice between overwrite or skip existing files, default is skip. Tested with Windows IIS FTP server, but Unix based ones should work fine too.
+- ▶ prefix on folders for visual distinction
+- Natural sorting — 1, 2, 10 instead of 1, 10, 2 available in settings(on by default).
 
+
+Long-press any folder or file to open a paginated selection dialog. If folder is long-pressed you get a selection from its contents(1 level deep), if file is long pressed you get a selection from the contents of the parent folder(folder youre currently in)
+
+- Tap items to check/uncheck individually
+
+- All / None — tap to check/uncheck items on current page, long-press to check/uncheck on all pages
+
+- Page indicator is tappable, you can enter any page number directly
+
+
+Download
+
+- Files streamed directly to disk — no memory buffering
+- Recursive subfolder download
+- Per-file progress throughout
+- Skip or overwrite existing files selectable in settings menu
+
+Settings available under Browser Settings> AI Slop Settings> FTP Folder Download
+
+### **[2-ftp-folder-download-mlsd-list](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-folder-download-mlsd-list.lua)**
+
+Same as 2-ftp-folder-download-nlst-size functionality wise, but bit faster at expense of reduced compatibility with old servers. If FTP servers you use dont work with this one, use 2-ftp-folder-download-nlst-size.
 
 ### **Patches tested on KOReader 2025.10 Ghost.**
 
