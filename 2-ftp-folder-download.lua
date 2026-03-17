@@ -203,7 +203,7 @@ end
 
 -- ── Recursive folder download ─────────────────────────────────────────────────
 
-local function downloadFolder(host, port, username, password, remote_path, local_path)
+local function downloadFolder(host, port, username, password, remote_path, local_path, progress)
     local lfs = require("libs/libkoreader-lfs")
     local ok_count, fail_count = 0, 0
 
@@ -220,7 +220,7 @@ local function downloadFolder(host, port, username, password, remote_path, local
         local l_child = local_path .. "/" .. entry.name
 
         if entry.is_dir then
-            local a, b = downloadFolder(host, port, username, password, r_child, l_child)
+            local a, b = downloadFolder(host, port, username, password, r_child, l_child, progress)
             ok_count = ok_count + a
             fail_count = fail_count + b
         else
@@ -228,15 +228,18 @@ local function downloadFolder(host, port, username, password, remote_path, local
             if exists and get("on_conflict") == "skip" then
                 logger.info("[ftp-folder-dl] skipping existing:", entry.name)
                 ok_count = ok_count + 1
+                if progress then progress(ok_count, fail_count, entry.name, true) end
             else
                 logger.info("[ftp-folder-dl] GET", r_child)
                 local ok_dl, dl_err = ftpGetFile(host, port, username, password,
                                                   r_child, l_child)
                 if ok_dl then
                     ok_count = ok_count + 1
+                    if progress then progress(ok_count, fail_count, entry.name, false) end
                 else
                     logger.warn("[ftp-folder-dl] GET failed:", r_child, dl_err)
                     fail_count = fail_count + 1
+                    if progress then progress(ok_count, fail_count, entry.name, false) end
                 end
             end
         end
@@ -287,24 +290,41 @@ local function doFolderDownload(item, address, username, password)
             local local_dest = dl_dir .. "/" .. folder_name
             logger.info("[ftp-folder-dl] downloading to:", local_dest)
 
-            UIManager:show(InfoMessage:new{
-                text = ('Downloading "%s"…'):format(folder_name), timeout = 3,
-            })
-            UIManager:forceRePaint()
-
             -- Reset MLSD cache for this session so a fresh attempt is made
             _mlsd_supported = {}
+
+            -- Running progress message — updated after each file, no pre-count needed
+            local cur_msg
+            local function updateProgress(ok_n, fail_n, filename, skipped)
+                if cur_msg then UIManager:close(cur_msg) end
+                local status = skipped and "skipped" or (fail_n > 0 and "failed" or "saved")
+                cur_msg = InfoMessage:new{
+                    text = ('Downloading "%s"\n%d saved, %d failed\n%s: %s'):format(
+                        folder_name, ok_n, fail_n, status, filename),
+                }
+                UIManager:show(cur_msg)
+                UIManager:forceRePaint()
+            end
+
+            -- Show initial message before first file arrives
+            cur_msg = InfoMessage:new{
+                text = ('Downloading "%s"…'):format(folder_name),
+            }
+            UIManager:show(cur_msg)
+            UIManager:forceRePaint()
 
             local pok, a, b = xpcall(
                 function()
                     return downloadFolder(host, port, username, password,
-                                         remote_path, local_dest)
+                                         remote_path, local_dest, updateProgress)
                 end,
                 function(e)
                     logger.err("[ftp-folder-dl] error:", e,
                         debug and debug.traceback() or "")
                 end
             )
+
+            if cur_msg then UIManager:close(cur_msg) end
 
             if pok then
                 UIManager:show(InfoMessage:new{
