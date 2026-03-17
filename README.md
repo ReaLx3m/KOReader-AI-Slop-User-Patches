@@ -113,7 +113,7 @@ If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then 
 
 ### **[2-ftp-folder-download.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-folder-download.lua)**
 
-Enables full folder download via the built in FTP client. No progress display, so depending on the size/number of files youre transfering and the speed of your WiFi connection and/or reader nand/sd card write speed, it might take a while, so be patient.
+Enables full folder download via the built in FTP client. Doesnt count files in folder/subfolders(takes too long on most e-ink devices), but displays the number you already downloaded so you know theres progress.
 
 - Long press on folder to call on download dialogue.
 
