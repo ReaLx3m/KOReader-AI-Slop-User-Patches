@@ -17,12 +17,6 @@ Disabling can also be done in explorer by adding .disabled extension to the file
 To uninstall just delete the file from the "patches" folder.
 
 
-
-<p float="left">
-<img width="360" height="480" alt="Home" src="https://github.com/user-attachments/assets/773c4e3c-fb08-465e-958c-dc16777606c7" />
-<img width="360" height="480" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
-</p>
-
 ## **Patches Description**
 
 ### **[2-multiview.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-multiview.lua)**
@@ -72,7 +66,9 @@ Looks better with [alternative reading status icons](https://github.com/SeriousH
 
 
 ### **[2-folder-cover-stack-left-spine-label-top.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-folder-cover-stack-left-spine-label-top.lua)**
-
+<p float="left">
+<img width="360" height="480" alt="Home" src="https://github.com/user-attachments/assets/773c4e3c-fb08-465e-958c-dc16777606c7" />
+</p>
 - Replaces the default folder icon in mosaic view with a visual book-stack effect.
 - Adds a thumbnail pulled from the folders contents(book/image). If no books or images are present in the root of the folder it will pull the thumbnail from a subfolder.
 - Adds a label at the top showing the folder name.
@@ -82,6 +78,10 @@ https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.l
 
 
 ### **[2-mosaic-vertical-label-left.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-mosaic-vertical-label-left.lua)**
+
+<p float="left">
+<img width="360" height="480" alt="In Folder" src="https://github.com/user-attachments/assets/edd9ad24-01f3-4864-9e23-08c18d78a16f" />
+</p>
 
 - Overlays a vertical filename label(without file extension) on the left edge of each book cover in mosaic view. The label is rotated 90° so the title reads bottom to top.
 
