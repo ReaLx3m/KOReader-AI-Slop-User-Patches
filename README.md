@@ -71,6 +71,18 @@ Enhances the built-in FTP browser with a download management interface.
 
 Settings are available under Settings > AI Slop Settings > FTP Download Manager
 
+### **[2-ftp-ftps-experimental](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-ftps-experimental.lua)**
+
+Addon for FTP Download Manager, with an S, for TLS. Adds FTPS support for the security concious.  
+
+Wont work as standalone as it hooks into FTP DM. Adds a "Use FTPS" checkmark in the File Browser>AI Slop Settings>FTP Download Manager settings submenu. 
+
+If youre accessing your FTP server from a local network then there is not that much point in using this, stick with plain FTP. But if its exposed to the outside world then its not a bad idea going with FTPS.
+
+Current FTPS implementation for the patch isnt the most optimal. Standard clients keep the control channel open for the entire session and only open/close data channels per file, this implementation opens and closes everything, control channel included, for each file, adding some overhead in the process. Negligible difference in transfer times for large files like .cbz/.pdf, and roughly 5-10% slower for smaller files like epub(depend on number of files and exact sizes, bigger faster/smaller slower).
+
+Still work in progress, so hopefully it will get a proper implementation soon and get to max speed, if possible at all with KOReader.
+
 
 
 
