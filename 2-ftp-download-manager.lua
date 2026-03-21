@@ -11,6 +11,9 @@
         buffering the entire file in memory first
 
     Install as:  <koreader>/patches/2-ftp-download-manager.lua
+
+    FTPS (TLS) support is provided by the companion patch:
+      <koreader>/patches/3-ftps.lua
 --]]
 
 local logger = require("logger")
@@ -92,6 +95,20 @@ local function baseParams(host, port, username, password)
     return p
 end
 
+-- ── Transport hook ────────────────────────────────────────────────────────────
+-- ftpDoGet is the single point through which all FTP socket.ftp.get calls flow.
+-- The companion FTPS patch (3-ftps.lua) replaces _ftp_transport.get to add TLS.
+
+local _ftp_transport = {}
+package.loaded["ftp-folder-dl.transport"] = _ftp_transport
+
+local function ftpDoGet(p)
+    if _ftp_transport.get then
+        return _ftp_transport.get(p)
+    end
+    return require("socket.ftp").get(p)
+end
+
 -- ── MLSD listing (RFC 3659) ───────────────────────────────────────────────────
 -- Returns {name, is_dir} list, or nil if server does not support MLSD.
 -- MLSD lines look like:
@@ -124,8 +141,7 @@ local function parseMlsd(raw)
 end
 
 local function ftpMlsd(host, port, username, password, path)
-    local ltn12      = require("ltn12")
-    local socket_ftp = require("socket.ftp")
+    local ltn12 = require("ltn12")
     if not path:match("/$") then path = path .. "/" end
     local t = {}
     local p = baseParams(host, port, username, password)
@@ -133,7 +149,7 @@ local function ftpMlsd(host, port, username, password, path)
     p.command = "mlsd"
     p.sink    = ltn12.sink.table(t)
     logger.info("[ftp-folder-dl] MLSD", host, path)
-    local ok, err = socket_ftp.get(p)
+    local ok, err = ftpDoGet(p)
     if not ok then return nil, err end
     return table.concat(t)
 end
@@ -257,8 +273,7 @@ local function parseList(raw)
 end
 
 local function ftpList(host, port, username, password, path)
-    local ltn12      = require("ltn12")
-    local socket_ftp = require("socket.ftp")
+    local ltn12 = require("ltn12")
     if not path:match("/$") then path = path .. "/" end
     local t = {}
     local p = baseParams(host, port, username, password)
@@ -266,7 +281,7 @@ local function ftpList(host, port, username, password, path)
     p.command = "list"
     p.sink    = ltn12.sink.table(t)
     logger.info("[ftp-folder-dl] LIST", host, path)
-    local ok, err = socket_ftp.get(p)
+    local ok, err = ftpDoGet(p)
     if not ok then return nil, err end
     return table.concat(t)
 end
@@ -340,14 +355,13 @@ local function ftpSizeProbe(host, port, username, password, path, names)
 end
 
 local function ftpListEntriesNlstSize(host, port, username, password, path)
-    local ltn12      = require("ltn12")
-    local socket_ftp = require("socket.ftp")
+    local ltn12 = require("ltn12")
     if not path:match("/$") then path = path .. "/" end
 
     local t = {}
     local p = baseParams(host, port, username, password)
     p.path = path; p.command = "nlst"; p.sink = ltn12.sink.table(t)
-    local ok, err = socket_ftp.get(p)
+    local ok, err = ftpDoGet(p)
     if not ok then return nil, err end
 
     local names = {}
@@ -395,8 +409,7 @@ end
 
 -- ── File download: pipe directly to disk ─────────────────────────────────────
 local function ftpGetFile(host, port, username, password, remote_path, local_path)
-    local ltn12      = require("ltn12")
-    local socket_ftp = require("socket.ftp")
+    local ltn12 = require("ltn12")
 
     local f, err = io.open(local_path, "wb")
     if not f then
@@ -407,7 +420,7 @@ local function ftpGetFile(host, port, username, password, remote_path, local_pat
     p.path = remote_path
     p.sink = ltn12.sink.file(f)  -- pipes chunks directly to disk, f closed by ltn12
 
-    local ok, dl_err = socket_ftp.get(p)
+    local ok, dl_err = ftpDoGet(p)
     if not ok then
         -- Clean up partial file on failure
         pcall(function() f:close() end)
@@ -480,22 +493,20 @@ end
 
 -- ── Size formatting helper ────────────────────────────────────────────────────
 
-local nbsp = "\194\160"  -- UTF-8 non-breaking space
-
 local function fmtSize(bytes)
     if not bytes then return "" end
-    if bytes < 1024 then return (" %d" .. nbsp .. "B"):format(bytes) end
-    if bytes < 1024*1024 then return (" %.1f" .. nbsp .. "KB"):format(bytes/1024) end
-    if bytes < 1024*1024*1024 then return (" %.1f" .. nbsp .. "MB"):format(bytes/(1024*1024)) end
-    return (" %.1f" .. nbsp .. "GB"):format(bytes/(1024*1024*1024))
+    if bytes < 1024 then return ("%dB"):format(bytes) end
+    if bytes < 1024*1024 then return ("%dKB"):format(math.floor(bytes/1024 + 0.5)) end
+    if bytes < 1024*1024*1024 then return ("%dMB"):format(math.floor(bytes/(1024*1024) + 0.5)) end
+    return ("%.1fGB"):format(bytes/(1024*1024*1024))
 end
 
 local function fmtSizeRound(bytes)
     if not bytes then return "" end
-    if bytes < 1024 then return ("%d B"):format(bytes) end
-    if bytes < 1024*1024 then return ("%d KB"):format(math.floor(bytes/1024 + 0.5)) end
-    if bytes < 1024*1024*1024 then return ("%d MB"):format(math.floor(bytes/(1024*1024) + 0.5)) end
-    return ("%.1f GB"):format(bytes/(1024*1024*1024))
+    if bytes < 1024 then return ("%dB"):format(bytes) end
+    if bytes < 1024*1024 then return ("%dKB"):format(math.floor(bytes/1024 + 0.5)) end
+    if bytes < 1024*1024*1024 then return ("%dMB"):format(math.floor(bytes/(1024*1024) + 0.5)) end
+    return ("%.1fGB"):format(bytes/(1024*1024*1024))
 end
 
 -- ── Download helper (shared by folder and file paths) ─────────────────────────
@@ -587,8 +598,7 @@ local function showSelectionDialog(host, port, username, password,
 
     local dialog_widget  -- forward ref
 
-
-    local size_col_w = Button:new{ text = "999.9 MB", bordersize = 0,
+    local size_col_w = Button:new{ text = "999MB", bordersize = 0,
                                    padding = 0, text_font_face = "cfont",
                                    text_font_size = 16 }:getSize().w
     local name_btn_w = row_w - size_col_w
@@ -736,7 +746,7 @@ local function showSelectionDialog(host, port, username, password,
         local function showProgress(filename, size)
             if cur_msg then UIManager:close(cur_msg) end
             cur_msg = InfoMessage:new{
-                text = ("%d done, %d failed\n↓ %s%s"):format(
+                text = ("%d downloaded, %d failed\n↓ %s %s"):format(
                     total_ok, total_fail, filename, fmtSize(size)),
             }
             UIManager:show(cur_msg)
@@ -809,10 +819,7 @@ local function showSelectionDialog(host, port, username, password,
                         callback = function()
                             local n = tonumber(input_dlg:getInputText())
                             UIManager:close(input_dlg)
-                            if n then
-                                n = math.max(1, math.min(page_count, math.floor(n)))
-                                if n ~= page then turnPage(n) end
-                            end
+                            if n then turnPage(math.max(1, math.min(n, page_count))) end
                         end,
                     },
                 }},
@@ -891,6 +898,10 @@ local function showSelectionDialog(host, port, username, password,
             local sz_str = sz > 0 and "/" .. fmtSizeRound(sz) or ""
             local fixed_w = Screen:scaleBySize(70 + 4 + 70 + 10 + 4*44 + 4*2 + 90 + 10 + 140)
             local count_w = row_w - fixed_w
+            -- Skip count button if there is not enough room (narrow screens).
+            if count_w < Screen:scaleBySize(30) then
+                return HorizontalSpan:new{ width = math.max(0, count_w) }
+            end
             count_btn = Button:new{
                 text       = ">" .. n .. sz_str,
                 width      = count_w,
@@ -970,7 +981,7 @@ local function doFileDownload(item, address, username, password)
     local file_name   = item.text
     local remote_path = item.url or ("/" .. file_name)
     local host, port  = parseAddress(address)
-    logger.info("[ftp-folder-dl] hold fired (file):", file_name, "host:", host)
+    logger.dbg("[ftp-folder-dl] hold fired (file):", file_name, "host:", host)
 
     -- Derive parent folder path and name from the file's remote path
     local parent_path = remote_path:match("^(.+)/[^/]+$") or "/"
@@ -986,7 +997,7 @@ local function doFolderDownload(item, address, username, password)
     local folder_name = item.text:gsub("^▶ ", ""):gsub("/$", "")
     local remote_path = (item.url or ("/" .. folder_name)):gsub("/$", "")
     local host, port  = parseAddress(address)
-    logger.info("[ftp-folder-dl] hold fired (folder):", folder_name, "host:", host)
+    logger.dbg("[ftp-folder-dl] hold fired (folder):", folder_name, "host:", host)
 
     showSelectionDialog(host, port, username, password,
                         remote_path, folder_name, nil)
@@ -1087,13 +1098,12 @@ if ok_ftpapi and FtpApi then
             end
         end
         logger.info("[ftp-folder-dl] browser MLSD+LIST failed, trying NLST+SIZE:", err)
-        local ltn12      = require("ltn12")
-        local socket_ftp = require("socket.ftp")
+        local ltn12 = require("ltn12")
         local t = {}
         local p = baseParams(host, port, user, pass)
         p.path = path:match("/$") and path or (path .. "/")
         p.command = "nlst"; p.sink = ltn12.sink.table(t)
-        local nlst_ok, nlst_err = socket_ftp.get(p)
+        local nlst_ok, nlst_err = ftpDoGet(p)
         if nlst_ok == nil then
             logger.warn("[ftp-folder-dl] browser NLST failed:", nlst_err)
             return {}
@@ -1127,6 +1137,70 @@ else
 end
 
 -- ── AI Slop Settings menu ─────────────────────────────────────────────────────
+-- The submenu item table is exposed via package.loaded so companion patches
+-- can insert their own entries at load time before the menu is ever built.
+
+local _ftp_menu_items = {
+    {
+        text_func = function()
+            return get("enabled") and "FTP Download Manager: enabled"
+                                   or "FTP Download Manager: disabled"
+        end,
+        checked_func = function() return get("enabled") end,
+        callback = function(tmi)
+            set("enabled", not get("enabled"))
+            if tmi then tmi:updateItems() end
+        end,
+    },
+    {
+        text = "On existing file: Skip",
+        checked_func = function() return get("on_conflict") == "skip" end,
+        callback = function() set("on_conflict", "skip") end,
+    },
+    {
+        text = "On existing file: Overwrite",
+        checked_func = function() return get("on_conflict") == "overwrite" end,
+        callback = function() set("on_conflict", "overwrite") end,
+    },
+    {
+        text = "FTP browser: natural sort (1, 2, 10)",
+        checked_func = function() return get("natural_sort") end,
+        callback = function() set("natural_sort", not get("natural_sort")) end,
+    },
+    {
+        text = "Selection dialog: shrink long names to fit",
+        checked_func = function() return get("selection_shrink") end,
+        callback = function() set("selection_shrink", not get("selection_shrink")) end,
+    },
+    {
+        text = "Selection dialog: items checked by default",
+        checked_func = function() return get("default_checked") end,
+        callback = function() set("default_checked", not get("default_checked")) end,
+    },
+    {
+        text = "Items per page in selection dialog",
+        callback = function()
+            local SpinWidget = require("ui/widget/spinwidget")
+            local UIManager  = require("ui/uimanager")
+            local spin = SpinWidget:new{
+                title_text  = "Items per page",
+                value       = get("items_per_page"),
+                value_min   = 10,
+                value_max   = 25,
+                value_step  = 1,
+                ok_text     = "Set",
+                callback    = function(spin_widget)
+                    set("items_per_page", spin_widget.value)
+                end,
+            }
+            UIManager:show(spin)
+        end,
+    },
+}
+-- Expose so companion patches (loaded after us) can insert entries before the
+-- menu is built. Any item inserted into this table at load time will appear
+-- automatically when the FileManager opens.
+package.loaded["ftp-folder-dl.submenu"] = _ftp_menu_items
 
 local FileManagerMenu      = require("apps/filemanager/filemanagermenu")
 local FileManagerMenuOrder = require("ui/elements/filemanager_menu_order")
@@ -1159,63 +1233,7 @@ function FileManagerMenu:setUpdateItemTable()
         table.insert(self.menu_items.ai_slop_settings.sub_item_table, {
             _ftp_folder_dl_entry = true,
             text = "FTP Download Manager",
-            sub_item_table = {
-                {
-                    text_func = function()
-                        return get("enabled") and "FTP Download Manager: enabled"
-                                               or "FTP Download Manager: disabled"
-                    end,
-                    checked_func = function() return get("enabled") end,
-                    callback = function(tmi)
-                        set("enabled", not get("enabled"))
-                        if tmi then tmi:updateItems() end
-                    end,
-                },
-                {
-                    text = "On existing file: Skip",
-                    checked_func = function() return get("on_conflict") == "skip" end,
-                    callback = function() set("on_conflict", "skip") end,
-                },
-                {
-                    text = "On existing file: Overwrite",
-                    checked_func = function() return get("on_conflict") == "overwrite" end,
-                    callback = function() set("on_conflict", "overwrite") end,
-                },
-                {
-                    text = "FTP browser: natural sort (1, 2, 10)",
-                    checked_func = function() return get("natural_sort") end,
-                    callback = function() set("natural_sort", not get("natural_sort")) end,
-                },
-                {
-                    text = "Selection dialog: shrink long names to fit",
-                    checked_func = function() return get("selection_shrink") end,
-                    callback = function() set("selection_shrink", not get("selection_shrink")) end,
-                },
-                {
-                    text = "Selection dialog: items checked by default",
-                    checked_func = function() return get("default_checked") end,
-                    callback = function() set("default_checked", not get("default_checked")) end,
-                },
-                {
-                    text = "Items per page in selection dialog",
-                    callback = function()
-                        local SpinWidget = require("ui/widget/spinwidget")
-                        local UIManager  = require("ui/uimanager")
-                        local spin = SpinWidget:new{
-                            title_text  = "Items per page",
-                            value       = get("items_per_page"),
-                            value_min   = 10,
-                            value_max   = 25,
-                            value_step  = 1,
-                            ok_text     = "Set",
-                            callback    = function(spin_widget)
-                                set("items_per_page", spin_widget.value)
-                            end,
-                        }
-                        UIManager:show(spin)
-                    end,
-                },
-            },
+            sub_item_table = _ftp_menu_items,
         })
     end
 
