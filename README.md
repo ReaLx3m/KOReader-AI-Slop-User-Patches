@@ -73,7 +73,7 @@ Settings are available under Settings > AI Slop Settings > FTP Download Manager
 
 ### **[2-ftp-ftps-experimental](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-ftps-experimental.lua)**
 
-Addon for FTP Download Manager, with an S, for TLS. Adds FTPS support for the security concious.  
+Addon for FTP Download Manager, with an S, for TLS. Adds FTPS support for the security concious. Re-download FTP Manager too, to make sure you have the latest patch with enabled hooking for ftp-ftps addon/patch.  
 
 Wont work as standalone as it hooks into FTP DM. Adds a "Use FTPS" checkmark in the File Browser>AI Slop Settings>FTP Download Manager settings submenu. 
 
