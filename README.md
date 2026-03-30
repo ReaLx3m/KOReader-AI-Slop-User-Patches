@@ -43,20 +43,20 @@ Will be unifying patches settings location going forward, so this one(and future
 
 ### **[FTP Download Manager](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-download-manager.lua)**
 
-Enhances the built-in FTP browser with a download management interface.
+Replaces the built-in FTP browser with a download management interface.
 
 #### Features
-- Unified listing method - tries MLSD > LIST > NLST+SIZE automatically for maximum server compatibility. Plain NLST, which the ftp browser on KOReader uses by default has problems with dissplaying folders with a dot in the name and properly identify files with a dot in the name before the extension. This solves that and also maintains max listing speed, except in a rare occasion when youre connecting to an old server that supports NLST only. LIST fallback using a Lua port of [D.J. Bernstein's ftpparse](https://cr.yp.to/ftpparse.html), covering 9 formats: EPLF, UNIX ls, Microsoft FTP Service, Windows NT FTP Server, VMS, WFTPD, NetPresenz, NetWare, MSDOS 
+- Unified listing method - tries MLSD > LIST > NLST+SIZE automatically for maximum server compatibility. Plain NLST, which the ftp browser on KOReader uses by default has problems with dissplaying folders with a dot in the name and properly identify files with a dot in the name before the extension. This solves that and also maintains max listing speed, except in a rare occasion when youre connecting to an old server that supports NLST only. LIST fallback using a Lua port of [D.J. Bernstein's ftpparse](https://cr.yp.to/ftpparse.html), covering 9 formats: EPLF, UNIX ls, Microsoft FTP Service, Windows NT FTP Server, VMS, WFTPD, NetPresenz, NetWare, MSDOS
+- Adds TLS(FTPS) support tot the ftp client for max server compatibility. By default it first tries FTP, if server explicitly alows only TLS over FTP(FTPS) and FTP fails, then it retries the connection with FTPS. Setting available to prioritize FTPS and fallback to plain FTP. Note: FTPS has some overhead compared to FTP, so if you want highest possible speed best to stick with FTP unless you have a legitimate reason for FTPS(Like a FTP server exposed to the internet that besides books/comics hosts other sensitive data).
 - Folder prefix for visual distinction and file size display in the FTP browser
 
 <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/FTP%20DM%20browser.bmp" />
 
-- Long-press any folder or file in the FTP browser to open a download selection dialog. Shows all items in the folder with file sizes(1 level deep)
-- Bulk selection - All/None buttons, tap checkmarks everything on the current page, long tap selects everything
-- Counter next to download button, showing selected item count and combined file size. If you have mixed selection of folders and files, folder size isnt counted.
+- Tap any file in the FTP browser to select it for downloading, to select a folder with its sub-folders long tap(short tapping opens the folder for browsing). If folder is selected for downloading the folder structure within it is kept, if individual files are selected from multiple folders downloads the files to the set folder without keeping the folder structure. Setting available to "always keep folder structure", even with single files selected from a folder. Download folder for each FTP server is set at first run, long-tapping "Download" button lets you override the download folder for the session. 
+- Bulk selection - All/None buttons, tap checkmarks everything on the current page, long tap selects everything in that folder. Range selection is done by tapping at the far right of an item(where the sizes are), first item tapped marks the starting point and second tap the end point, selecting everything in between as a result. 
+- Counter next to download button, showing selected item count and combined file size. If folder is selected it wont count the files and folders within it, but will correctly display the total size of the contents. 
 <img width="360" height="480" alt="FTP Selection" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/FTP%20DM%20selection.bmp" />
 
-- Recursive folder download(if folder is selected, downloads subfolders too)
 - File progress tracking
 
 <img width="400" height="100" alt="FTP Progress 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/FTP%20DM%20progress%201.bmp" />
