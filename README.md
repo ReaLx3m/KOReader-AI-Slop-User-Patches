@@ -65,25 +65,10 @@ Replaces the built-in FTP browser with a download management interface.
 - Silent skip or overwrite existing files, configurable in settings
 - Natural sort - sorts 1, 2, 10 instead of 1, 10, 2 (on by default)
 
-- Text display modes for download selection dialog - names either wrap(shrink) to fit or truncate with ... selectable in settings
-- Configurable items per page in the download selection dialog (10-25)
-- All items checked or unchecked, selectable in settings(unchecked as default) 
+- Text display modes - names either wrap(shrink) to fit or truncate with ... selectable in settings
+- Configurable items per page (10-25)
 
 Settings are available under Settings > AI Slop Settings > FTP Download Manager
-
-### **[2-ftp-ftps-experimental](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-ftp-ftps-experimental.lua)**
-
-Addon for FTP Download Manager, with an S, for TLS. Adds FTPS support for the security concious. Re-download FTP Manager too, to make sure you have the latest patch with enabled hooking for ftp-ftps addon/patch.  
-
-Wont work as standalone as it hooks into FTP DM. Adds a "Use FTPS" checkmark in the File Browser>AI Slop Settings>FTP Download Manager settings submenu. 
-
-If your FTP server is exposed to the outside world then its not a bad idea going with FTPS, but if youre accessing your FTP server from a local network only, then there is not that much point in using this, stick with plain FTP. When the FTPS setting is unchecked it basically does nothing and just sits there, so no harm in having it in your patches in case you ever run into a situation where you need to connect to explicit FTPS server.
-
-Current FTPS implementation for the patch isnt the most optimal. Standard clients keep the control channel open for the entire session and only open/close data channels per file, this implementation opens and closes everything, control channel included, for each file, adding some overhead in the process which will affect the transfer times when lots of files are involved. Negligible difference in transfer times for large files like .cbz/.pdf, and roughly 5-10% slower for smaller files like epub(depend on number of files and exact sizes, bigger faster/smaller slower).
-
-Still work in progress, so hopefully it will get a proper implementation soon and get to max speed, if possible at all with KOReader.
-
-
 
 
 ### **[2-real-books.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-real-books.lua)**
