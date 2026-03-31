@@ -1330,6 +1330,7 @@ local function showSelectionDialog(host, port, username, password,
         updateSlots(page)
         updateCount()
         UIManager:setDirty(dialog_widget, "ui")
+        _dest.dir = base_dir
 
         UIManager:show(InfoMessage:new{
             text = ("Done. %d saved%s, %d failed\n-> %s"):format(
@@ -1506,6 +1507,25 @@ local function showSelectionDialog(host, port, username, password,
             range_anchor = nil
             turnPage(math.min(prev.page, page_count))
             if updateTitle then updateTitle() end
+        end,
+        hold_callback = function()
+            local PathChooser = require("ui/widget/pathchooser")
+            local cfg_key = "ftp_base_dir_" .. host
+            local chooser = PathChooser:new{
+                select_directory = true,
+                select_file      = false,
+                show_files       = false,
+                path             = _dest.dir,
+                onConfirm        = function(dir)
+                    _dest.dir = dir
+                    G_reader_settings:saveSetting(cfg_key, dir)
+                    UIManager:show(InfoMessage:new{
+                        text = "Download folder set to:\n" .. dir,
+                        timeout = 3,
+                    })
+                end,
+            }
+            UIManager:show(chooser)
         end,
     }
     updateTitle = function()
