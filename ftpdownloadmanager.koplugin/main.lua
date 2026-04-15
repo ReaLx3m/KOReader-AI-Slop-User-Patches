@@ -48,34 +48,33 @@ local DEFAULTS = {
 
 }
 
-local _cfg_cache = nil
-local function getCfg()
-    if not _cfg_cache then
-        _cfg_cache = G_reader_settings:readSetting("ftp_folder_dl") or {}
-    end
-    return _cfg_cache
-end
+-- Plugin settings and server list are stored in their own dedicated file,
+-- completely separate from G_reader_settings (settings.reader.lua).
+local _LuaSettings  = require("luasettings")
+local _DataStorage  = require("datastorage")
+local _plugin_settings = _LuaSettings:open(
+    _DataStorage:getSettingsDir() .. "/ftpdownloadmanager.lua")
+
 local function get(key)
-    local cfg = getCfg()
-    if cfg[key] ~= nil then return cfg[key] end
+    local v = _plugin_settings:readSetting(key)
+    if v ~= nil then return v end
     return DEFAULTS[key]
 end
 local function set(key, value)
-    local cfg = getCfg()
-    cfg[key] = value
-    G_reader_settings:saveSetting("ftp_folder_dl", cfg)
-    _cfg_cache = nil
+    _plugin_settings:saveSetting(key, value)
+    _plugin_settings:flush()
 end
 
 -- ── Server list persistence ───────────────────────────────────────────────────
 -- Each server: { name, address, username, password }
 
 local function getServers()
-    return G_reader_settings:readSetting("ftp_dl_servers") or {}
+    return _plugin_settings:readSetting("servers") or {}
 end
 
 local function saveServers(servers)
-    G_reader_settings:saveSetting("ftp_dl_servers", servers)
+    _plugin_settings:saveSetting("servers", servers)
+    _plugin_settings:flush()
 end
 
 -- ── Natural sort ──────────────────────────────────────────────────────────────
@@ -793,51 +792,27 @@ local function showSelectionDialog(host, port, username, password,
     local selections   = {}
     local search_filter = ""  -- active search filter; "" means no filter
     local search_backup_entries = nil  -- backup of real entries during recursive search
-    -- Per-server persistent index cache
-    local function index_key() return "ftp_index_"..host.."_"..tostring(port or 21) end
-    local function index_ts_key() return "ftp_index_ts_"..host.."_"..tostring(port or 21) end
+    -- Per-server persistent index cache (stored in its own dedicated file)
     local function index_file_path()
-        local DataStorage = require("datastorage")
         local safe_host = host:gsub("[^%w%.%-]", "_")
-        return DataStorage:getSettingsDir()
+        return _DataStorage:getSettingsDir()
                .. "/ftp_index_" .. safe_host .. "_" .. tostring(port or 21) .. ".lua"
     end
     local function load_index()
-        -- Migrate: if old data still lives in G_reader_settings, remove it now
-        if G_reader_settings:readSetting(index_key()) ~= nil then
-            G_reader_settings:delSetting(index_key())
-            G_reader_settings:flush()
-        end
-        local LuaSettings = require("luasettings")
-        local s = LuaSettings:open(index_file_path())
+        local s = _LuaSettings:open(index_file_path())
         return s:readSetting("index")
     end
     local function save_index(all)
-        -- Store the index in its own dedicated file, not in the main settings file.
-        -- Writing a large table into G_reader_settings (settings.reader.lua) makes
-        -- KOReader parse it on every book open/close, causing slowdowns.
-        local LuaSettings = require("luasettings")
-        local s = LuaSettings:open(index_file_path())
+        local s = _LuaSettings:open(index_file_path())
         s:saveSetting("index", all)
         s:saveSetting("ts", os.time())
         s:flush()
-        -- Remove any leftover entries from the main settings file
-        local dirty = false
-        if G_reader_settings:readSetting(index_key()) ~= nil then
-            G_reader_settings:delSetting(index_key()); dirty = true
-        end
-        if G_reader_settings:readSetting(index_ts_key()) ~= nil then
-            G_reader_settings:delSetting(index_ts_key()); dirty = true
-        end
-        if dirty then G_reader_settings:flush() end
     end
     local function index_needs_refresh()
         local days = get("index_refresh_days")
         if days == 0 then return false end  -- never auto-refresh
-        -- Check dedicated index file first, fall back to legacy main-settings key
-        local LuaSettings = require("luasettings")
-        local s = LuaSettings:open(index_file_path())
-        local ts = s:readSetting("ts") or G_reader_settings:readSetting(index_ts_key())
+        local s = _LuaSettings:open(index_file_path())
+        local ts = s:readSetting("ts")
         if not ts then return true end  -- no index yet
         return (os.time() - ts) > (days * 86400)
     end
@@ -1262,7 +1237,7 @@ local function showSelectionDialog(host, port, username, password,
             select_directory=true, select_file=false, show_files=false, path=_dest.dir,
             onConfirm=function(dir)
                 _dest.dir=dir; base_dir=dir
-                G_reader_settings:saveSetting(cfg_key, dir)
+                set(cfg_key, dir)
             end,
         })
     end
@@ -1749,7 +1724,7 @@ local function showServerListDialog()
         local is_public  = server.is_public or false
         local index_delay = server.index_delay or 0.5
         local cfg_key    = "ftp_base_dir_"..host
-        local saved_dir  = G_reader_settings:readSetting(cfg_key)
+        local saved_dir  = get(cfg_key)
         if not saved_dir or saved_dir=="" then
             local PathChooser=require("ui/widget/pathchooser")
             UIManager:show(InfoMessage:new{
@@ -1761,7 +1736,7 @@ local function showServerListDialog()
                 select_directory=true, select_file=false, show_files=false,
                 path=getDownloadDir(),
                 onConfirm=function(dir)
-                    G_reader_settings:saveSetting(cfg_key, dir)
+                    set(cfg_key, dir)
                     showSelectionDialog(host, port, username, password, "/", server.name, dir, nil, nil, is_public, index_delay)
                 end,
             })
