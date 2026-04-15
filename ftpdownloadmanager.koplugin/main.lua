@@ -16,9 +16,11 @@
     Install as:  <koreader>/plugins/ftpdownloadmanager.koplugin/
 --]]
 
-local WidgetContainer = require("ui/widget/container/widgetcontainer")
-local Dispatcher      = require("dispatcher")
-local logger          = require("logger")
+local WidgetContainer    = require("ui/widget/container/widgetcontainer")
+local Dispatcher         = require("dispatcher")
+local logger             = require("logger")
+local FileManagerMenu    = require("apps/filemanager/filemanagermenu")
+local FileManagerMenuOrder = require("ui/elements/filemanager_menu_order")
 
 logger.info("[ftp-dl] loading plugin...")
 
@@ -1864,13 +1866,46 @@ end
 
 function FTPDownloadManager:init()
     self:onDispatcherRegisterActions()
-    self.ui.menu:registerToMainMenu(self)
 end
 
-function FTPDownloadManager:addToMainMenu(menu_items)
-    menu_items.ftp_download_manager = {
-        text = "FTP Download Manager",
-        sub_item_table = {
+-- ── Inject into AI Slop Settings in the filing-cabinet menu ───────────────────
+
+local _ftp_menu_hooked = false
+local orig_setUpdateItemTable = FileManagerMenu.setUpdateItemTable
+
+function FileManagerMenu:setUpdateItemTable()
+    if not _ftp_menu_hooked then
+        _ftp_menu_hooked = true
+
+        -- Ensure ai_slop_settings exists in the filing-cabinet Settings tab
+        if type(FileManagerMenuOrder.filemanager_settings) == "table" then
+            local found = false
+            for _, k in ipairs(FileManagerMenuOrder.filemanager_settings) do
+                if k == "ai_slop_settings" then found = true; break end
+            end
+            if not found then
+                table.insert(FileManagerMenuOrder.filemanager_settings, 1, "ai_slop_settings")
+            end
+        end
+
+        -- Create ai_slop_settings parent if not already created by another patch
+        if not self.menu_items.ai_slop_settings then
+            self.menu_items.ai_slop_settings = {
+                text = "AI Slop Settings",
+                sub_item_table = {},
+            }
+        end
+
+        -- Insert FTP DM at position 1 (guard against duplicate injection)
+        local already = false
+        for _, item in ipairs(self.menu_items.ai_slop_settings.sub_item_table) do
+            if item._ftp_dl_entry then already = true; break end
+        end
+        if not already then
+            table.insert(self.menu_items.ai_slop_settings.sub_item_table, 1, {
+                _ftp_dl_entry = true,
+                text = "FTP Download Manager",
+                sub_item_table = {
             {
                 text     = "Browse servers",
                 callback = function() showServerListDialog() end,
@@ -2025,8 +2060,12 @@ function FTPDownloadManager:addToMainMenu(menu_items)
                     })
                 end,
             },
-        },
-    }
+                },
+            })
+        end
+    end
+
+    orig_setUpdateItemTable(self)
 end
 
 logger.info("[ftp-dl] plugin loaded")
