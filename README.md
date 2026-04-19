@@ -70,6 +70,7 @@ Adds a full fledged download management interface for FTP.
 
 - Range selection is done by tapping at the far right of an item(where the sizes are), first item tapped marks the starting point and second tap the end point, selecting everything in between as a result.
 <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Range%20Selection.png" />
+
 - Counter next to download button, showing selected item count and combined file size. If folder is selected it wont display the count of the files and folders within it, but will display the total size of the contents. 
 <img width="360" height="480" alt="FTP Selection" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Number%20of%20Items-Size%20Count%20.png" />
 
