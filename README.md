@@ -54,44 +54,54 @@ Adds a full fledged download management interface for FTP.
 #### Features
 - Unified listing method - tries MLSD > LIST > NLST+SIZE automatically for maximum server compatibility. Plain NLST, which the ftp browser on KOReader uses by default has problems with dissplaying folders with a dot in the name and properly identify files with a dot in the name before the extension. This solves that and also maintains max listing speed, except in a rare occasion when youre connecting to an old server that supports NLST only. LIST fallback using a Lua port of [D.J. Bernstein's ftpparse](https://cr.yp.to/ftpparse.html), covering 9 formats: EPLF, UNIX ls, Microsoft FTP Service, Windows NT FTP Server, VMS, WFTPD, NetPresenz, NetWare, MSDOS
 - Adds TLS(FTPS) support to the ftp client for max server compatibility. By default it first tries FTP, if server explicitly alows only TLS over FTP(FTPS) and FTP fails, then it retries the connection with FTPS. Setting available to prioritize FTPS and fallback to plain FTP if FTPS not supported by the server. Note: FTPS has some overhead compared to FTP, so if you want highest possible speed best to stick with FTP unless you have a legitimate reason for FTPS(Like a FTP server exposed to the internet that besides books/comics hosts other sensitive data).
-- Search function added that will index the whole server on first search, and then use that on-device index for future searches. You can manually reindex(checkbox option), or have it do an automatic re-index on your next search after given period has passed(configurable in settings, default 7 days). When Search dialog is opened(results displayed) tap the looking glas icon to get back to the folder view. Note: If youre using a public server, hammering it with requests while indexing its contents can/might get you temporarily or permanently banned. So when creating the server entry you can check the "Public Server" box, and at the end youll be presented with a spinner where you can set the listing rate limiting(per folder). 
-<img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Search%20Dialog.png" />
-<img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Search%20Results.png" />
+- Search function added that will index the whole server on first search, and then use that on-device index for future searches. You can manually reindex(checkbox option), or have it do an automatic re-index on your next search after given period has passed(configurable in settings, default 7 days). When Search dialog is opened(results displayed) tap the looking glas icon to get back to the folder view. Note: If youre using a public server, hammering it with requests while indexing its contents can/might get you temporarily or permanently banned. So when creating the server entry you can check the "Public Server" box, and at the end youll be presented with a spinner where you can set the listing rate limiting(per folder).
+
+
+  <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Search%20Dialog.png" />
+  
+  <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Search%20Results.png" />
   
 - Folder prefix for visual distinction and file size display in the FTP browser
 
-<img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Folder%20indication.png" />
+  <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Folder%20indication.png" />
 
 - Tap any file in the FTP browser to select it for downloading, to select a folder with its sub-folders long tap(short tapping opens the folder for browsing). If folder is selected for downloading the folder structure within it is kept, if individual files are selected from multiple folders downloads the files to the set folder without keeping the folder structure. Setting available to "always keep folder structure", even with single files selected from a folder. Download folder for each FTP server is set at first run, changing the folder can be done via the "Save to /" button. If you want to change the download folder just for the folowing download, long tap the "Download Button" and select the folder, after the download has finished the folder is reset to the one you have set at first start or via the "Save to /" button.
 - Both top and the lower area with the folder name serve as back buttons, long tapping lands you in the home folder of the FTP server. While in the home folder(root), tapping those areas will change the download behavior on existing files, Skip or Overwrite visually represented by [S]/[O]
-<img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Top-Bottom%20Title-Back%20Buttons.png" />
+
+  <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Top-Bottom%20Title-Back%20Buttons.png" />
 
 - Bulk selection - All/None buttons, tap checkmarks everything on the current page, long tap selects everything in that folder.
 
 - Range selection is done by tapping at the far right of an item(where the sizes are), first item tapped marks the starting point and second tap the end point, selecting everything in between as a result.
-<img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Range%20Selection.png" />
 
-- Counter next to download button, showing selected item count and combined file size. If folder is selected it wont display the count of the files and folders within it, but will display the total size of the contents. 
-<img width="360" height="480" alt="FTP Selection" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Number%20of%20Items-Size%20Count%20.png" />
+  <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Range%20Selection.png" />
+
+- Counter next to download button, showing selected item count and combined file size. If folder is selected it wont display the count of the files and folders within it, but will display the total size of the contents.
+
+  <img width="360" height="480" alt="FTP Selection" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Number%20of%20Items-Size%20Count%20.png" />
 
 - Download progress tracking
 
-<img width="250" height="100" alt="FTP Progress 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Download%20Progress.png" />
-<img width="250" height="100" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Download%20Progress%202.png" />
+  <img width="250" height="100" alt="FTP Progress 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Download%20Progress.png" />
+  <img width="250" height="100" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Download%20Progress%202.png" />
   
 - Natural sort - sorts 1, 2, 10 instead of 1, 10, 2 (on by default)
 
 - Text display modes - names either truncate with ...  or wrap(shrink) to fit, selectable in settings
-<img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Shrink%20Long%20Names%20to%20Fit.png" />
+
+  <img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Truncate%20Names.png" />
+  <img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Shrink%20Long%20Names%20to%20Fit.png" />
 
 - Configurable max items per page (10-25), how many will actually display depends on buttons/rows height.
 
 - Gesture shortcut for the FTP browser available in "General" section
-<img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Gesture%20Shortcut%20in%20General.png" />
+
+  <img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Gesture%20Shortcut%20in%20General.png" />
 
 - Settings are available under Settings > AI Slop Settings > FTP Download Manager
-<img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Settings%201.png" />
-<img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Settings%202.png" />
+
+  <img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Settings%201.png" />
+  <img width="360" height="480" alt="FTP Progress 2" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Settings%202.png" />
 
 
 
