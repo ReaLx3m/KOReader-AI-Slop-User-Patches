@@ -47,7 +47,7 @@ Will be unifying patches settings location going forward, so this one(and future
 
 Due to upcoming Koreader changes to cloud storage which will break the patch, FTP DM is now a standalone plugin, which should increase its survivability in the long run. The original [FTP DM patch](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/retired/2-ftp-download-manager.lua) is no longer updated with fixes/features.
 
-To instal create a "ftpdownloadmanager.koplugin" folder in Koreader/Plugins/ and copy the _meta.lua and main.lua files to Koreader/Plugins/ftpdownloadmanager.koplugin/
+To instal create a "ftpdownloadmanager.koplugin" folder in Koreader/Plugins/ and copy the _meta.lua and main.lua files to Koreader/Plugins/ftpdownloadmanager.koplugin/. To update just download the latest "main.lua" file(_meta.lua not requiered).
 
 Adds a full fledged download management interface for FTP.
 
@@ -76,7 +76,7 @@ Adds a full fledged download management interface for FTP.
 
   <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Range%20Selection.png" />
 
-- Counter next to download button, showing selected item count and combined file size. If folder is selected it wont display the count of the files and folders within it, but will display the total size of the contents.
+- Counter next to download button, showing selected file count and combined file size.
 
   <img width="360" height="480" alt="FTP Selection" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Number%20of%20Items-Size%20Count%20.png" />
 
