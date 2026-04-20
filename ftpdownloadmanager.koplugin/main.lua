@@ -956,7 +956,10 @@ local function showSelectionDialog(host, port, username, password,
     local function updateCount()
         if not count_btn then return end
         local n, sz = 0, 0
-        for _, meta in pairs(selections) do n=n+1; if meta.size then sz=sz+meta.size end end
+        for _, meta in pairs(selections) do
+            n = n + (meta.file_count or 1)
+            if meta.size then sz = sz + meta.size end
+        end
         local sz_str = sz>0 and "/"..fmtSize(sz) or ""
         count_btn:setText(n..sz_str..">", count_btn.width); count_btn:refresh()
     end
