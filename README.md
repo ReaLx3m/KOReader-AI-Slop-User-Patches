@@ -45,7 +45,7 @@ Will be unifying patches settings location going forward, so this one(and future
 
 ### **[FTP Download Manager Plugin](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/tree/main/ftpdownloadmanager.koplugin)**
 
-Due to upcoming Koreader changes to cloud storage which will break the patch, FTP DM is now a standalone plugin, which should increase its survivability in the long run. The original FTP DM patch is no longer updated with fixes/features.
+Due to upcoming Koreader changes to cloud storage which will break the patch, FTP DM is now a standalone plugin, which should increase its survivability in the long run. The original [FTP DM patch](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/retired/2-ftp-download-manager.lua) is no longer updated with fixes/features.
 
 To instal create a "ftpdownloadmanager.koplugin" folder in Koreader/Plugins/ and copy the _meta.lua and main.lua files to Koreader/Plugins/ftpdownloadmanager.koplugin/
 
