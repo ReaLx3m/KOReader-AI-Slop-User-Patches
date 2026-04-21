@@ -70,7 +70,7 @@ Adds a full fledged download management interface for FTP.
 
   <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Top-Bottom%20Title-Back%20Buttons.png" />
 
-- Bulk selection - All/None buttons, tap checkmarks everything on the current page, long tap selects everything in that folder.
+- Bulk selection - All/None buttons, tap checks/unchecks everything on the current page, long tap checks/unchecks everything in that folder.
 
 - Range selection is done by tapping at the far right of an item(where the sizes are), first item tapped marks the starting point and second tap the end point, selecting everything in between as a result.
 
