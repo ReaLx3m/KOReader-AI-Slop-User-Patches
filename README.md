@@ -189,7 +189,7 @@ If the simplicity of 2-mosaic-vertical-label-left.lua isnt enough for you, then 
 
 ### **[2-home-hold-go-up.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-home-hold-go-up.lua)**
 
-- Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. 
+- Changes the long-press behaviour of the home button so that it navigates up one folder instead of opening the default nested folders menu. Short tap has the default behavior, takes you to the home folder. 
 
 ### **[2-home-short-up-long-home.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-home-short-up-long-home.lua)**
 
