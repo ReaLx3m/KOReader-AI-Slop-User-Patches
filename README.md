@@ -143,7 +143,7 @@ Features:
 
   <img width="400" height="300" alt="Real books 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/3Real%20Books%20Settings%201.jpg" />
   
-   
+If you dont care about page count but just want a fixed Real Book look, you can disable all the line tiers except the one you want(say 5) in AI Slop Settings>Real Books>Page Lines>Show line tiers, and just set 2 lines value to 1 page. As a result all your books will display with 5 lines. 
  
 For automating adding pagecount argument(p123 etc.) at the end of the file you can use Calibre, follow [JoshuaCant's guide](https://github.com/joshuacant/ProjectTitle/wiki/Configure-Calibre-Page-Counts)
 
