@@ -125,7 +125,7 @@ Features:
 
    <img width="400" height="400" alt="Real books 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/5Real%20Books%20Settings%203.jpg" />
 
-- Progress badge on the bottom left edge
+- Progress badge on the bottom right edge
 
   <img width="400" height="300" alt="Real books 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/2Real%20Books%20Badge.jpg" />
 
