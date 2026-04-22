@@ -391,7 +391,8 @@ end
 --             on top of the fill so the corner is never overwritten.
 local function paintProgressBadge(bb, cover_x, cover_y, cover_w, cover_h,
                                    percent, is_finished, ot, outline_r)
-    if not percent and not is_finished then return end
+    -- nil percent means book never opened; show 0% so badge always covers the dog ear
+    if percent == nil and not is_finished then percent = 0 end
 
     ot        = ot        or 2
     outline_r = outline_r or ot
@@ -686,14 +687,7 @@ local function patchMosaicMenuItem(MosaicMenuItem)
     local orig_paintTo = MosaicMenuItem.paintTo
 
     MosaicMenuItem.paintTo = function(self, bb, x, y)
-        -- suppress KOReader's built-in progress bar only when drawing our own badge;
-        -- if badge is disabled, leave percent_finished intact so native/third-party bars render
-        local saved_pct = self.percent_finished
-        if get("progress_badge_enabled") then
-            self.percent_finished = nil
-        end
         orig_paintTo(self, bb, x, y)
-        self.percent_finished = saved_pct
 
         if self.is_directory then return end
 
@@ -865,8 +859,9 @@ local function patchMosaicMenuItem(MosaicMenuItem)
         end
 
         -- ── progress badge: rounded-rect corner label ────────────────────────
-        -- Runs after the outline. Pass the same corner radius so the badge fill
-        -- can clip itself to avoid overwriting the outline's rounded-corner arc.
+        -- Always paints when enabled, covering KOReader's dog ear.
+        -- Unread books show 0%; finished books show ✓; others show percent.
+        -- Native progress bar renders freely beneath — no suppression needed.
         if get("progress_badge_enabled") and cover_w > 0 and cover_h > 0 then
             local prog_pct, prog_done = getReadingProgress(filepath)
             local badge_ot = get("page_thickness")
