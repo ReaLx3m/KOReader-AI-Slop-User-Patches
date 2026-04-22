@@ -136,16 +136,24 @@ Looks better with [alternative reading status icons](https://github.com/SeriousH
 
 
 
-### **[2-folder-cover-stack-left-spine-label-top.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-folder-cover-stack-left-spine-label-top.lua)**
-<p float="left">
-<img width="360" height="480" alt="Home" src="https://github.com/user-attachments/assets/773c4e3c-fb08-465e-958c-dc16777606c7" />
-</p>
-- Replaces the default folder icon in mosaic view with a visual book-stack effect.
-- Adds a thumbnail pulled from the folders contents(book/image). If no books or images are present in the root of the folder it will pull the thumbnail from a subfolder.
-- Adds a label at the top showing the folder name.
-- Bottom label with folder/file count and icons to represent each respectively.
+### **[2-folder-cover-stack.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-folder-cover-stack.lua)**
 
-https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.lua was used as base. I added some functionality and made some cosmetic changes.
+
+ - Replaces the default folder icon in mosaic view with a visual book-stack effect with slightly rounded edges. Setting for the stack to be displayed on the left or right sides.
+
+- Adds a thumbnail pulled from the folders contents(book/image). If no books or images are present in the root of the folder it will pull the thumbnail from a subfolder. You can provide your own thumbnail for the folder by adding Cover.jpg.
+
+  <img width="360" height="480" alt="settings" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Folder%20Cover%20Stack.jpg" />
+
+- Aspect ratio setting with stretch to fit for displayed thumbnails, as ones pulled from books can vary in aspect ratio so folder sizes will differ.
+
+- Label at the top showing the folder name, and Bottom label with folder/file count and icons. Adjustable opacity.
+
+- Setting available under AI Slop Settings> Folder Cover Stack
+
+  <img width="360" height="240" alt="settings" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Folder%20Cover%20Stack%20settings.jpg" />
+
+https://github.com/sebdelsol/KOReader.patches/blob/main/2-browser-folder-cover.lua was used as base.
 
 
 
