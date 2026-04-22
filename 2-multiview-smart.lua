@@ -3,7 +3,7 @@ User patch: Multiview Smart
 Automatically switches the file browser display mode and grid size based on
 folder contents.
 
-  - Folders containing sub-folders  → configurable mode  (default: Classic)
+  - Folders containing sub-folders  → configurable mode  (default: Mosaic)
   - Folders with only files         → configurable mode  (default: Mosaic)
 
 Grid size is chosen dynamically: counts items in the folder, then picks the
@@ -38,7 +38,7 @@ FileChooser._multiview_smart_patched = true
 local DEFAULTS = {
     enabled  = true,
     -- mode per context (dirs = folder has subdirs, files = folder has only files)
-    dirs_mode  = "classic",
+    dirs_mode  = "mosaic_image",
     files_mode = "mosaic_image",
     -- smart grid: mosaic min/max per context+orientation
     dirs_sg_portrait_mosaic_min_cols      = 3,
@@ -83,23 +83,6 @@ local _ready = false
 local _curr_modes
 local _orig_updateItems, _orig_recalcDimen, _orig_onClose
 local _mosaic_updateItems, _mosaic_recalcDimen, _mosaic_updateItemsBuildUI
-
-local function setupUpvalues(fc)
-    if _ready then return true end
-    local cb = fc.show_parent and fc.show_parent.coverbrowser
-    if not cb or not cb.setupFileManagerDisplayMode then return false end
-    local fn          = cb.setupFileManagerDisplayMode
-    _curr_modes       = userpatch.getUpValue(fn, "curr_display_modes")
-    _orig_updateItems = userpatch.getUpValue(fn, "_FileChooser_updateItems_orig")
-    _orig_recalcDimen = userpatch.getUpValue(fn, "_FileChooser__recalculateDimen_orig")
-    _orig_onClose     = userpatch.getUpValue(fn, "_FileChooser_onCloseWidget_orig")
-    if not _curr_modes or not _orig_updateItems then return false end
-    _mosaic_updateItems        = FileChooser.updateItems
-    _mosaic_recalcDimen        = FileChooser._recalculateDimen
-    _mosaic_updateItemsBuildUI = FileChooser._updateItemsBuildUI
-    _ready = true
-    return true
-end
 
 -- ── directory / item detection ────────────────────────────────────────────────
 
@@ -226,7 +209,7 @@ end
 
 local function applyModeForPath(fc, path)
     if not get("enabled") then return end
-    if not setupUpvalues(fc) then return end
+    if not _ready then return end
     local has_dirs = pathHasSubdirs(path)
     if not _settings_changed and path == _last_path and has_dirs == _last_has_dirs then return end
     _last_path, _last_has_dirs = path, has_dirs
@@ -255,6 +238,21 @@ local function applyModeForPath(fc, path)
     end
 end
 
+-- ── helpers ───────────────────────────────────────────────────────────────────
+
+local function refresh(fc)
+    if fc and get("enabled") then
+        fc.no_refresh_covers = nil
+        fc:updateItems()
+    end
+end
+
+local function sgChanged(fc)
+    _last_path = nil; _last_has_dirs = nil; _settings_changed = true
+    applyModeForPath(fc, fc.path)
+    refresh(fc)
+end
+
 -- ── per-path scroll memory ────────────────────────────────────────────────────
 
 local _saved_pages          = {}
@@ -274,9 +272,24 @@ function FileChooser:changeToPath(path, focused_path)
     return orig_changeToPath(self, path, focused_path)
 end
 
+local _first_apply_done = false
+
 local orig_switchItemTable = FileChooser.switchItemTable
 function FileChooser:switchItemTable(title, item_table, item_number, ...)
     orig_switchItemTable(self, title, item_table, item_number, ...)
+    -- First-run apply: coverbrowser is now ready but the initial genItemTableFromPath
+    -- fired before _ready was set. Defer via nextTick so this doesn't run during
+    -- FileChooser:init (where item_group doesn't exist yet).
+    if not _first_apply_done and _ready and self.path then
+        _first_apply_done = true
+        local fc = self
+        UIManager:nextTick(function()
+            _last_path = nil; _settings_changed = true
+            applyModeForPath(fc, fc.path)
+            refresh(fc)
+        end)
+        return
+    end
     if not _restore_page_pending then return end
     if self.path ~= _restore_for_path then return end
     _restore_page_pending, _restore_for_path = false, nil
@@ -299,21 +312,6 @@ function FileChooser:genItemTableFromPath(path, ...)
         applyModeForPath(self, path)
     end
     return orig_genItemTableFromPath(self, path, ...)
-end
-
--- ── helpers ───────────────────────────────────────────────────────────────────
-
-local function refresh(fc)
-    if fc and get("enabled") then
-        fc.no_refresh_covers = nil
-        fc:updateItems()
-    end
-end
-
-local function sgChanged(fc)
-    _last_path = nil; _last_has_dirs = nil; _settings_changed = true
-    applyModeForPath(fc, fc.path)
-    refresh(fc)
 end
 
 -- ── include/exclude grid checklist ────────────────────────────────────────────
@@ -593,5 +591,29 @@ function FileManagerMenu:setUpdateItemTable()
 
     orig_setUpdateItemTable(self)
 end
+
+-- Register a post-init hook: coverbrowser calls this right after it finishes
+-- loading, so upvalues are guaranteed to be available here. This fixes the
+-- first-run issue where the view wouldn't apply until the user manually toggled
+-- display mode in KOReader's settings.
+-- Must be at the bottom so applyModeForPath and refresh are already defined.
+userpatch.registerPatchPluginFunc("coverbrowser", function(plugin)
+    local fn = plugin.setupFileManagerDisplayMode
+    if not fn then return end
+    _curr_modes       = userpatch.getUpValue(fn, "curr_display_modes")
+    _orig_updateItems = userpatch.getUpValue(fn, "_FileChooser_updateItems_orig")
+    _orig_recalcDimen = userpatch.getUpValue(fn, "_FileChooser__recalculateDimen_orig")
+    _orig_onClose     = userpatch.getUpValue(fn, "_FileChooser_onCloseWidget_orig")
+    if not _curr_modes or not _orig_updateItems then return end
+    -- Load the mosaic functions directly from coverbrowser's modules rather than
+    -- calling setupFileManagerDisplayMode (which needs self.ui and crashes at init).
+    local ok_cm, CoverMenu  = pcall(require, "covermenu")
+    local ok_mm, MosaicMenu = pcall(require, "mosaicmenu")
+    if not ok_cm or not ok_mm then return end
+    _mosaic_updateItems        = CoverMenu.updateItems
+    _mosaic_recalcDimen        = MosaicMenu._recalculateDimen
+    _mosaic_updateItemsBuildUI = MosaicMenu._updateItemsBuildUI
+    _ready = true
+end)
 
 logger.info("multiview-smart: patch applied")
