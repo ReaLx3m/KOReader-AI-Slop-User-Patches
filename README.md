@@ -107,13 +107,7 @@ Adds a full fledged download management interface for FTP.
 
 ### **[2-real-books.lua](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/2-real-books.lua)**
 
-Evolution of Vertical label advanced.
-
-
-   
-
-
-Styled to look like a physical book.
+Evolution of Vertical label advanced, styled to look like a physical book.
 
   <img width="360" height="480" alt="Real books 1" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/1Real%20Books.jpg" />
 
