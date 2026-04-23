@@ -104,7 +104,6 @@ local function set(key, value)
     local cfg = getCfg()
     cfg[key] = value
     G_reader_settings:saveSetting("mosaic_vlabel", cfg)
-    logger.warn("SPINE_DEBUG set(" .. tostring(key) .. ") = " .. tostring(value))
     _item_cache = {}  -- any setting change invalidates the render cache
 end
 
@@ -941,72 +940,145 @@ local function patchMosaicMenuItem(MosaicMenuItem)
         local dark_mode = get("dark_mode")
         local bg_r, bg_g, bg_b = dark_mode and 0 or 255, dark_mode and 0 or 255, dark_mode and 0 or 255
         local blend_alpha = math.floor(alpha * 255)
-
-        -- ── DEBUG: dump every value that controls spine appearance ────────────
-        do
-            local cfg_raw = G_reader_settings:readSetting("mosaic_vlabel") or {}
-            logger.warn("SPINE_DEBUG ─────────────────────────────────────────────")
-            logger.warn("SPINE_DEBUG  raw cfg.dark_mode  = " .. tostring(cfg_raw.dark_mode))
-            logger.warn("SPINE_DEBUG  get('dark_mode')   = " .. tostring(dark_mode))
-            logger.warn("SPINE_DEBUG  DEFAULTS.dark_mode = " .. tostring(DEFAULTS.dark_mode))
-            logger.warn("SPINE_DEBUG  alpha (0-1)        = " .. tostring(alpha))
-            logger.warn("SPINE_DEBUG  blend_alpha (0-255)= " .. tostring(blend_alpha))
-            logger.warn("SPINE_DEBUG  bg_r/g/b           = " .. bg_r .. "/" .. bg_g .. "/" .. bg_b
-                        .. "  (0=black, 255=white)")
-            -- Blitbuffer type so we know if it's grayscale or RGB
-            local bb_type_ok, bb_type = pcall(function() return tmp:getType() end)
-            logger.warn("SPINE_DEBUG  tmp blitbuffer type= " .. (bb_type_ok and tostring(bb_type) or "error"))
-            -- Sample the centre pixel of tmp BEFORE blending (should be a cover colour)
-            local mid_x = math.floor(label_h / 2)
-            local mid_y = math.floor(strip_w / 2)
-            local px_ok, px = pcall(function() return tmp:getPixel(mid_x, mid_y) end)
-            if px_ok and px then
-                local pr_ok, pr = pcall(function() return px:getR() end)
-                local pg_ok, pg = pcall(function() return px:getG() end)
-                local pb_ok, pb = pcall(function() return px:getB() end)
-                logger.warn("SPINE_DEBUG  tmp centre pixel BEFORE blend: R=" ..
-                    (pr_ok and tostring(pr) or "?") .. " G=" ..
-                    (pg_ok and tostring(pg) or "?") .. " B=" ..
-                    (pb_ok and tostring(pb) or "?"))
-            else
-                logger.warn("SPINE_DEBUG  tmp centre pixel BEFORE blend: getPixel error = " .. tostring(px))
-            end
-        end
-        -- ── END DEBUG pre-blend ───────────────────────────────────────────────
-
         tmp:blendRectRGB32(0, 0, label_h, strip_w, Blitbuffer.ColorRGB32(bg_r, bg_g, bg_b, blend_alpha))
 
-        -- ── DEBUG: sample pixel AFTER blend to see what colour landed ─────────
-        do
-            local mid_x = math.floor(label_h / 2)
-            local mid_y = math.floor(strip_w / 2)
-            local px_ok, px = pcall(function() return tmp:getPixel(mid_x, mid_y) end)
-            if px_ok and px then
-                local pr_ok, pr = pcall(function() return px:getR() end)
-                local pg_ok, pg = pcall(function() return px:getG() end)
-                local pb_ok, pb = pcall(function() return px:getB() end)
-                logger.warn("SPINE_DEBUG  tmp centre pixel AFTER  blend: R=" ..
-                    (pr_ok and tostring(pr) or "?") .. " G=" ..
-                    (pg_ok and tostring(pg) or "?") .. " B=" ..
-                    (pb_ok and tostring(pb) or "?") ..
-                    "  (expected ~" .. bg_r .. " for bg)")
-            else
-                logger.warn("SPINE_DEBUG  tmp centre pixel AFTER  blend: getPixel error = " .. tostring(px))
+        -- ── DEBUG: sample tmp centre after blend, before text ────────────────
+        local dbg_done = false  -- only log first book per render pass
+        if not dbg_done then
+            dbg_done = true
+            local cx = math.floor(label_h / 2)
+            local cy = math.floor(strip_w / 2)
+            local function px(buf, x, y, label)
+                local ok, p = pcall(function() return buf:getPixel(x, y) end)
+                if ok and p then
+                    local r = pcall(function() return p:getR() end) and p:getR() or "?"
+                    local g = pcall(function() return p:getG() end) and p:getG() or "?"
+                    local b = pcall(function() return p:getB() end) and p:getB() or "?"
+                    logger.warn("SPINE_DEBUG2 " .. label .. " R="..tostring(r).." G="..tostring(g).." B="..tostring(b))
+                else
+                    logger.warn("SPINE_DEBUG2 " .. label .. " getPixel failed")
+                end
             end
-            logger.warn("SPINE_DEBUG ─────────────────────────────────────────────")
+            logger.warn("SPINE_DEBUG2 ══════════════════════════════════════")
+            logger.warn("SPINE_DEBUG2 dark_mode=" .. tostring(dark_mode) ..
+                        " alpha=" .. tostring(alpha) ..
+                        " blend_alpha=" .. tostring(blend_alpha) ..
+                        " bb:getType()=" .. tostring(bb:getType()))
+            logger.warn("SPINE_DEBUG2 label_h=" .. label_h .. " strip_w=" .. strip_w ..
+                        " sample=(" .. cx .. "," .. cy .. ")")
+            px(tmp, cx, cy, "[1] tmp AFTER blend, BEFORE text paint:")
+
+            -- paint text
+            local text_color = dark_mode and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
+            text_widget.fgcolor = text_color
+            logger.warn("SPINE_DEBUG2 text_color set to: " .. (dark_mode and "WHITE(255)" or "BLACK(0)"))
+            local text_only = CenterContainer:new{
+                dimen = Geom:new{ w = label_h, h = strip_w },
+                text_widget,
+            }
+            text_only:paintTo(tmp, 0, 0)
+            text_only:free()
+
+            -- sample a grid across tmp to find where text pixels landed
+            logger.warn("SPINE_DEBUG2 [2] tmp AFTER text paint — grid sample:")
+            for sy = 0, strip_w - 1, math.max(1, math.floor(strip_w / 4)) do
+                for sx = math.floor(label_h * 0.1), math.floor(label_h * 0.9),
+                         math.max(1, math.floor(label_h / 8)) do
+                    px(tmp, sx, sy, "  ("..sx..","..sy..")")
+                end
+            end
+
+            -- shear
+            local shear = -(get("text_shear") / 100)
+            local sheared = Blitbuffer.new(label_h, strip_w, bb:getType())
+            for row = 0, strip_w - 1 do
+                local offset = math.floor((row - strip_w / 2) * shear)
+                local src_x = math.max(0, -offset)
+                local dst_x = math.max(0, offset)
+                local w = label_h - math.abs(offset)
+                if w > 0 then
+                    sheared:blitFrom(tmp, dst_x, row, src_x, row, w, 1)
+                end
+            end
+            tmp:free()
+            tmp = sheared
+
+            logger.warn("SPINE_DEBUG2 [3] sheared AFTER shear — grid sample:")
+            for sy = 0, strip_w - 1, math.max(1, math.floor(strip_w / 4)) do
+                for sx = math.floor(label_h * 0.1), math.floor(label_h * 0.9),
+                         math.max(1, math.floor(label_h / 8)) do
+                    px(tmp, sx, sy, "  ("..sx..","..sy..")")
+                end
+            end
+
+            local rotated = tmp:rotatedCopy(angle)
+            tmp:free()
+
+            -- sample rotated
+            local rcx = math.floor(strip_w / 2)
+            local rcy = math.floor(label_h / 2)
+            logger.warn("SPINE_DEBUG2 [4] rotated AFTER rotatedCopy — grid sample:")
+            for sy = 0, label_h - 1, math.max(1, math.floor(label_h / 4)) do
+                for sx = 0, strip_w - 1, math.max(1, math.floor(strip_w / 4)) do
+                    px(rotated, sx, sy, "  ("..sx..","..sy..")")
+                end
+            end
+            logger.warn("SPINE_DEBUG2 ══════════════════════════════════════")
+
+            -- continue with rotated already assigned
+            -- save background strip before we draw (so we can restore corners)
+            local bg = Blitbuffer.new(strip_w, label_h, bb:getType())
+            bg:blitFrom(bb, 0, 0, label_x, label_y, strip_w, label_h)
+            bb:blitFrom(rotated, label_x, label_y, 0, 0, strip_w, label_h)
+            rotated:free()
+            for row = 0, math.max(cut_h_top, cut_h_bot) - 1 do
+                local brow = label_h - (scale_pct < 100 and 0 or 1) - row
+                if row < cut_h_top then
+                    local t = (cut_h_top - row) / cut_h_top
+                    local trim = math.floor(t ^ 0.6 * strip_w)
+                    if trim > 0 then
+                        bb:blitFrom(bg, label_x + strip_w - trim, label_y + row, strip_w - trim, row, trim, 1)
+                    end
+                end
+                if row < cut_h_bot then
+                    local t = (cut_h_bot - row) / cut_h_bot
+                    local trim = math.floor((1 - (1 - t) ^ 0.6) * strip_w)
+                    if trim > 0 then
+                        bb:paintRect(label_x, label_y + brow, trim, 1, Blitbuffer.COLOR_WHITE)
+                    end
+                end
+            end
+            bg:free()
+            -- draw lines above cover
+            do
+                local color    = getLineColor()
+                local len_pct  = get("page_line_length_pct")
+                local fixed_len = math.max(1, math.floor(cover_w * len_pct / 100))
+                for i = 1, num_lines do
+                    local by = cover_y - page_thick - page_gap - (i - 1) * line_step
+                    local row_in_cut = by - label_y
+                    local line_start
+                    if row_in_cut >= 0 and row_in_cut < cut_h_top then
+                        local t = (cut_h_top - row_in_cut) / cut_h_top
+                        local trim = math.floor(t ^ 0.6 * strip_w)
+                        line_start = label_x + strip_w - trim
+                    else
+                        line_start = label_x + strip_w
+                    end
+                    local this_len = (i == num_lines) and (fixed_len + 1) or fixed_len
+                    local draw_len = math.min(this_len, cover_x + cover_w - line_start)
+                    local line_color = (i == num_lines) and Blitbuffer.COLOR_GRAY_2 or color
+                    if draw_len > 0 then
+                        paintRoundedLine(bb, line_start, by, draw_len, page_thick, line_color)
+                    end
+                end
+            end
+            return  -- skip the normal code path below for this item
         end
-        -- ── END DEBUG post-blend ──────────────────────────────────────────────
 
         -- paint text at 100% opacity on top
         local text_color = dark_mode and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
         text_widget.fgcolor = text_color
-
-        -- ── DEBUG: log chosen text colour ─────────────────────────────────────
-        do
-            local tc_name = dark_mode and "COLOR_WHITE (255)" or "COLOR_BLACK (0)"
-            logger.warn("SPINE_DEBUG  text_color chosen  = " .. tc_name)
-        end
-        -- ── END DEBUG text colour ─────────────────────────────────────────────
         local text_only = CenterContainer:new{
             dimen = Geom:new{ w = label_h, h = strip_w },
             text_widget,
@@ -1946,5 +2018,5 @@ function FileChooser:genItemTableFromPath(path, ...)
     return orig_genItemTableFromPath(self, path, ...)
 end
 
-logger.warn("SPINE_DEBUG: DEBUG BUILD LOADED — 2-real-books.lua (spine colour diagnostic)")
+logger.warn("SPINE_DEBUG2: DEBUG BUILD 2 LOADED — text pixel pipeline diagnostic")
 logger.info("mlabel: patch applied")
