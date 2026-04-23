@@ -261,7 +261,7 @@ local function getPageCount(filepath)
 
     -- highest priority: explicit page count in filename e.g. "Book Title p234.epub"
     local fname = filepath:match("([^/]+)$") or ""
-    local p = fname:match("[Pp](%d+)%.")
+    local p = fname:match("[Pp]%((%d+)%)%.") or fname:match("[Pp](%d+)%.")
     if p then return tonumber(p) end
 
     local DocSettings = require("docsettings")
