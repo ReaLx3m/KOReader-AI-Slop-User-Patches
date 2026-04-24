@@ -661,8 +661,14 @@ function FileManagerMenu:setUpdateItemTable()
         }
     end
 
-    -- Append Folder Cover Stack entry.
+    -- Append Folder Cover Stack entry (guard against duplicate injection).
+    local already = false
+    for _, item in ipairs(self.menu_items.ai_slop_settings.sub_item_table) do
+        if item._folder_cover_stack_entry then already = true; break end
+    end
+    if not already then
     table.insert(self.menu_items.ai_slop_settings.sub_item_table, {
+        _folder_cover_stack_entry = true,
         text = _("Folder Cover Stack"),
         sub_item_table_func = function()
             -- Grab BookInfoManager lazily so coverbrowser is loaded by now.
@@ -826,6 +832,7 @@ function FileManagerMenu:setUpdateItemTable()
             }
         end,
     })
+    end  -- if not already
 
     orig_setUpdateItemTable(self)
 end
