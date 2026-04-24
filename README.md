@@ -147,7 +147,7 @@ If you dont care about page count but just want a fixed Real Book look, you can 
  
 For automating adding pagecount argument(p(123) etc.) at the end of the file you can use Calibre, follow [JoshuaCant's guide](https://github.com/joshuacant/ProjectTitle/wiki/Configure-Calibre-Page-Counts)
 
-If youre not going to use the Real Books progress bage, but relying on third party badges/bars and facing issues with the main, use the [test version](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/test%20versions/2-real-books.lua) for the time being, till main is updated with the changes.
+If youre not going to use the Real Books progress badge, but relying on third party badges/bars and facing issues with the main, use the [test version](https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/test%20versions/2-real-books.lua) for the time being, till main is updated with the changes.
 
 
 
