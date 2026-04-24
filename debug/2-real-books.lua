@@ -923,7 +923,9 @@ local function patchMosaicMenuItem(MosaicMenuItem)
         local angle   = (get("direction") == "down") and 270 or 90
 
         -- sample the full cover strip (cover_h tall) then scale-stretch to label_h
-        local tmp = Blitbuffer.new(label_h, strip_w, bb:getType())
+        -- Use BB8 (8-bit grayscale) explicitly: the screen buffer may be 4bpp on
+        -- e-ink devices, which would quantise white (255) down to 51 (max 4bpp value).
+        local tmp = Blitbuffer.new(label_h, strip_w, Blitbuffer.TYPE_BB8)
         local src = Blitbuffer.new(strip_w, cover_h, bb:getType())
         src:blitFrom(bb, 0, 0, cover_x, cover_y, strip_w, cover_h)
         -- stretch src (strip_w × cover_h) → stretched (strip_w × label_h)
@@ -990,7 +992,7 @@ local function patchMosaicMenuItem(MosaicMenuItem)
 
             -- shear
             local shear = -(get("text_shear") / 100)
-            local sheared = Blitbuffer.new(label_h, strip_w, bb:getType())
+            local sheared = Blitbuffer.new(label_h, strip_w, Blitbuffer.TYPE_BB8)
             for row = 0, strip_w - 1 do
                 local offset = math.floor((row - strip_w / 2) * shear)
                 local src_x = math.max(0, -offset)
@@ -1086,7 +1088,7 @@ local function patchMosaicMenuItem(MosaicMenuItem)
         text_only:paintTo(tmp, 0, 0)
         text_only:free()
         local shear = -(get("text_shear") / 100)
-        local sheared = Blitbuffer.new(label_h, strip_w, bb:getType())
+        local sheared = Blitbuffer.new(label_h, strip_w, Blitbuffer.TYPE_BB8)
         for row = 0, strip_w - 1 do
             local offset = math.floor((row - strip_w / 2) * shear)
             local src_x = math.max(0, -offset)
