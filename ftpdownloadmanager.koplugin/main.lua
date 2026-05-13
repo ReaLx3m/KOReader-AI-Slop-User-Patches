@@ -940,9 +940,18 @@ local function showSelectionDialog(host, port, username, password,
         text_font_face="cfont", text_font_size=get("item_font_size"),
     }:getSize().h + Screen:scaleBySize(1)  -- +1 for the separator LineWidget
 
-    -- Fixed chrome: title + 2 separators + 2 button rows + their padding
+    -- Fixed chrome: title + 2 separators + 2 button rows + their padding.
+    -- Match the exact FrameContainer padding values used when building inner[]:
+    --   title FC:      padding = padding (all sides)
+    --   top_btn FC:    padding_top=2, padding_bottom=0  → +2
+    --   bot_btn FC:    padding_top=2, padding_bottom=2  → +4
+    --   two LineWidgets each scaleBySize(1)
     local title_h_approx    = Screen:scaleBySize(36) + padding*2 + Screen:scaleBySize(1)
-    local btn_rows_h_approx = btn_h * 2 + Screen:scaleBySize(6) + Screen:scaleBySize(1)
+    local btn_rows_h_approx = btn_h * 2
+                              + Screen:scaleBySize(2)          -- top_btn FC padding_top
+                              + Screen:scaleBySize(2)          -- bot_btn FC padding_top
+                              + Screen:scaleBySize(2)          -- bot_btn FC padding_bottom
+                              + Screen:scaleBySize(1)          -- separator LineWidget
     local chrome_h = title_h_approx + btn_rows_h_approx
     local avail_h  = dialog_h - chrome_h
 
@@ -969,12 +978,21 @@ local function showSelectionDialog(host, port, username, password,
         return isChecked(idx) and "✓ " or ""
     end
 
+    local row_vg_container  -- assigned after inner is built; holds the FrameContainer wrapping row_vg
+
     local function updateSlots(p)
         local visible  = filteredEntries()
         local f        = (p-1)*actual_per_page+1
         local sl       = math.min(actual_per_page, #visible-(p-1)*actual_per_page)
         local truncate = not get("selection_shrink")
-        while #row_vg>0 do table.remove(row_vg) end
+        -- Replace row_vg with a fresh VerticalGroup rather than removing children
+        -- in-place. WidgetContainer:remove() calls :free() on children, which nils
+        -- their internal buffers; if a repaint fires in the same event cycle those
+        -- freed widgets crash at paintTo. Swapping the container child leaves the
+        -- old group alive (not freed) for any in-flight paint; Lua GC collects it.
+        local new_vg = VerticalGroup:new{ allow_mirroring=false }
+        row_vg = new_vg
+        if row_vg_container then rawset(row_vg_container, 1, new_vg) end
         slot_btns, sep_widgets = {}, {}
         for slot = 1, sl do
             local idx      = f+slot-1
@@ -1068,11 +1086,11 @@ local function showSelectionDialog(host, port, username, password,
             sep_widgets[slot]=sep; table.insert(row_vg, sep)
         end
         updateCount(); if updateTitle then updateTitle() end
+        if updateFiller then updateFiller() end
         UIManager:setDirty(dialog_widget, "ui")
     end
 
-    row_vg = VerticalGroup:new{ allow_mirroring=false }
-    updateSlots(page)
+    updateSlots(page)  -- this also initialises row_vg
 
     local btn_prev, btn_next, btn_first, btn_last, page_label_btn
 
@@ -1536,25 +1554,72 @@ local function showSelectionDialog(host, port, username, password,
         },
     }
 
-    local inner=VerticalGroup:new{
+    -- Button rows are built first and measured so the item list is given exactly
+    -- the remaining space. The footer is then pinned to the bottom via BottomContainer
+    -- inside an OverlapGroup — it physically cannot be pushed off screen.
+    local BottomContainer = require("ui/widget/container/bottomcontainer")
+    local footer_widget = VerticalGroup:new{
         align="left",
-        FrameContainer:new{padding=padding,bordersize=0,[1]=title_row},
-        LineWidget:new{dimen=Geom:new{w=dialog_w,h=Screen:scaleBySize(1)}},
-        FrameContainer:new{padding_top=0,padding_left=padding,padding_right=padding,
-                           padding_bottom=0,bordersize=0,
-                           height=avail_h,[1]=row_vg},
         LineWidget:new{dimen=Geom:new{w=dialog_w,h=Screen:scaleBySize(1)}},
         FrameContainer:new{padding_top=Screen:scaleBySize(2),padding_bottom=0,
                            padding_left=Screen:scaleBySize(2),padding_right=Screen:scaleBySize(2),
                            bordersize=0,[1]=top_btn_row},
-        FrameContainer:new{padding_top=Screen:scaleBySize(2),padding_bottom=Screen:scaleBySize(2),
+        FrameContainer:new{padding_top=Screen:scaleBySize(2),padding_bottom=Screen:scaleBySize(5),
                            padding_left=Screen:scaleBySize(2),padding_right=Screen:scaleBySize(2),
                            bordersize=0,[1]=bottom_btn_row},
+    }
+    local footer_h = footer_widget:getSize().h
+
+    -- Title block measured the same way
+    local title_fc    = FrameContainer:new{padding=padding,bordersize=0,[1]=title_row}
+    local title_sep   = LineWidget:new{dimen=Geom:new{w=dialog_w,h=Screen:scaleBySize(1)}}
+    local title_block = VerticalGroup:new{ align="left", title_fc, title_sep }
+    local title_block_h = title_block:getSize().h
+
+    -- Item list gets exactly what is left between title and footer
+    local item_area_h = math.max(dummy_slot_h, dialog_h - title_block_h - footer_h)
+
+    -- Recompute actual_per_page with the exact available height
+    local max_per_page2    = math.max(1, math.floor(item_area_h / dummy_slot_h))
+    actual_per_page        = math.min(get("items_per_page"), max_per_page2)
+    page_count             = math.ceil(#(filteredEntries()) / actual_per_page)
+    page                   = math.max(1, math.min(page, page_count))
+
+    -- updateFiller is now a no-op; kept so existing call-sites don't error
+    local updateFiller = function() end
+
+    local row_fc = FrameContainer:new{padding_top=0,padding_left=padding,padding_right=padding,
+                       padding_bottom=0,bordersize=0,
+                       [1]=row_vg}
+    row_vg_container = row_fc  -- updateSlots swaps row_fc[1] instead of mutating row_vg
+
+    -- Clip the item area to its fixed height so it never overlaps the footer
+    local item_clip = FrameContainer:new{
+        padding=0, bordersize=0,
+        width=dialog_w, height=item_area_h,
+        [1]=row_fc,
+    }
+
+    -- layer 1: title + clipped item list, top-aligned
+    -- layer 2: footer always pinned to the bottom
+    local inner = OverlapGroup:new{
+        dimen = Geom:new{ w=dialog_w, h=dialog_h },
+        VerticalGroup:new{
+            align="left",
+            title_block,
+            item_clip,
+        },
+        BottomContainer:new{
+            dimen = Geom:new{ w=dialog_w, h=dialog_h },
+            [1] = footer_widget,
+        },
     }
     dialog_widget=FrameContainer:new{
         background=Blitbuffer.COLOR_WHITE,radius=0,
         padding=0,width=dialog_w,height=dialog_h,[1]=inner,
     }
+    -- Re-render slots with the corrected per-page count
+    updateSlots(page)
     UIManager:show(dialog_widget)
 end
 
