@@ -1313,13 +1313,7 @@ local function showSelectionDialog(host, port, username, password,
         bordersize=0, padding=_vpad,
         face=small_face, text_font_bold=true,
         callback=function()
-            if #nav_stack==0 then
-                -- At root: toggle skip/overwrite
-                local new_conflict=get("on_conflict")=="skip" and "overwrite" or "skip"
-                set("on_conflict", new_conflict)
-                if updateBackBtn then updateBackBtn() end
-                if updateTitle then updateTitle() end
-            else
+            if #nav_stack>0 then
                 -- In subfolder: navigate up one level
                 local prev=table.remove(nav_stack)
                 cur_path=prev.path; cur_name=prev.name; entries=prev.entries
@@ -1332,7 +1326,15 @@ local function showSelectionDialog(host, port, username, password,
             end
         end,
         hold_callback=function()
-            goToRoot()
+            if #nav_stack==0 then
+                -- At root: toggle skip/overwrite
+                local new_conflict=get("on_conflict")=="skip" and "overwrite" or "skip"
+                set("on_conflict", new_conflict)
+                if updateBackBtn then updateBackBtn() end
+                if updateTitle then updateTitle() end
+            else
+                goToRoot()
+            end
         end,
     }
 
@@ -1387,13 +1389,7 @@ local function showSelectionDialog(host, port, username, password,
         text=titleText(), align="left", face=small_face,
         width=dialog_w-padding*2-Screen:scaleBySize(48)*2, height=Screen:scaleBySize(44), bordersize=0, padding=0,
         callback=function()
-            if #nav_stack==0 then
-                -- At root: toggle skip/overwrite (mirrors bottom back button)
-                local new_conflict=get("on_conflict")=="skip" and "overwrite" or "skip"
-                set("on_conflict", new_conflict)
-                if updateBackBtn then updateBackBtn() end
-                if updateTitle then updateTitle() end
-            else
+            if #nav_stack>0 then
                 -- In subfolder: navigate up one level
                 local prev=table.remove(nav_stack)
                 cur_path=prev.path; cur_name=prev.name; entries=prev.entries
@@ -1406,7 +1402,15 @@ local function showSelectionDialog(host, port, username, password,
             end
         end,
         hold_callback=function()
-            goToRoot()
+            if #nav_stack==0 then
+                -- At root: toggle skip/overwrite (mirrors bottom back button)
+                local new_conflict=get("on_conflict")=="skip" and "overwrite" or "skip"
+                set("on_conflict", new_conflict)
+                if updateBackBtn then updateBackBtn() end
+                if updateTitle then updateTitle() end
+            else
+                goToRoot()
+            end
         end,
     }
     updateTitle=function()
