@@ -66,7 +66,8 @@ Adds a full fledged download management interface for FTP.
   <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Folder%20indication.png" />
 
 - Tap any file in the FTP browser to select it for downloading, to select a folder with its sub-folders long tap(short tapping opens the folder for browsing). If folder is selected for downloading the folder structure within it is kept, if individual files are selected from multiple folders downloads the files to the set folder without keeping the folder structure. Setting available to "always keep folder structure", even with single files selected from a folder. Download folder for each FTP server is set at first run, changing the folder can be done via the "Save to /" button. If you want to change the download folder just for the folowing download, long tap the "Download Button" and select the folder, after the download has finished the folder is reset to the one you have set at first start or via the "Save to /" button.
-- Both top and the lower area with the folder name serve as back buttons, long tapping lands you in the home folder of the FTP server. While in the home folder(root), long tapping those areas will change the download behavior on existing files, Skip or Overwrite visually represented by [S]/[O]
+- Both top and the lower area with the folder name serve as back buttons, long tapping lands you in the home folder of the FTP server.
+- While in the home folder(root), long tapping those areas will change the download behavior on existing files, Skip or Overwrite visually represented by [S]/[O]
 
   <img width="360" height="480" alt="FTP Browser" src="https://github.com/ReaLx3m/KOReader-AI-Slop-User-Patches/blob/main/images/Top-Bottom%20Title-Back%20Buttons.png" />
 
