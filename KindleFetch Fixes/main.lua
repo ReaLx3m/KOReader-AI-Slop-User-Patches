@@ -5,6 +5,8 @@ local Screen = require("device").screen
 local UIManager = require("ui/uimanager")
 local DownloadMgr = require("ui/downloadmgr")
 local Menu = require("ui/widget/menu")
+local GestureRange = require("ui/gesturerange")
+local Geom = require("ui/geometry")
 local KindleFetchSettings = require("settings.settings")
 local SettingsPage = require("settings.settingspage")
 local util = require("util")
@@ -103,6 +105,31 @@ function KindleFetch:setupUI()
             end
         }}}
     }
+
+    -- InputDialog doesn't support tap-outside-to-dismiss by default, so add
+    -- it ourselves: a full-screen tap handler that only closes the dialog
+    -- when the tap lands outside its own frame (taps on the input field or
+    -- buttons are unaffected, since those are handled by their own, more
+    -- specific gesture ranges first).
+    self.search_box.ges_events = self.search_box.ges_events or {}
+    self.search_box.ges_events.TapClose = {GestureRange:new{
+        ges = "tap",
+        range = Geom:new{
+            x = 0,
+            y = 0,
+            w = Screen:getWidth(),
+            h = Screen:getHeight()
+        }
+    }}
+    function self.search_box:onTapClose(arg, ges)
+        if self.dialog_frame and self.dialog_frame.dimen and self.dialog_frame.dimen:contains(ges.pos) then
+            return false
+        end
+        UIManager:close(self)
+        UIManager:setDirty(nil, "ui")
+        return true
+    end
+
     UIManager:show(self.search_box)
     UIManager:setDirty(self.search_box, "ui")
 end
