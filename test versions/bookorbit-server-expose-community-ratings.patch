@@ -1,0 +1,42 @@
+diff --git a/packages/types/src/koreader.ts b/packages/types/src/koreader.ts
+index 469b67f..49bd554 100644
+--- a/packages/types/src/koreader.ts
++++ b/packages/types/src/koreader.ts
+@@ -1,4 +1,5 @@
+ import type { HighlightOfTheDayWidgetData, ReadingGoalWidgetData, ReadingStreakWidgetData } from "./dashboard";
++import type { BookCommunityRating } from "./metadata-fetch";
+ 
+ export interface KoreaderCredentials {
+   username: string;
+@@ -239,6 +240,15 @@ export interface KoreaderCatalogBookDetail extends KoreaderCatalogBookListItem {
+   libraryId: number;
+   libraryName: string;
+   rating: number | null;
++  /**
++   * Per-provider community ratings (Hardcover, Goodreads, Amazon, iTunes,
++   * etc.) already collected server-side for this book (see
++   * BookDetailDto.communityRatings) but never previously surfaced to the
++   * KOReader plugin -- only the user's own `rating` above was. Exposed
++   * here, unfiltered, so a client can pick whichever provider it wants to
++   * display (e.g. a hero "community rating" row) instead of guessing.
++   */
++  communityRatings: BookCommunityRating[];
+   pageCount: number | null;
+   collections: { id: number; name: string }[];
+   genres: string[];
+diff --git a/server/src/modules/koreader/koreader-catalog.service.ts b/server/src/modules/koreader/koreader-catalog.service.ts
+index 1b13630..2268410 100644
+--- a/server/src/modules/koreader/koreader-catalog.service.ts
++++ b/server/src/modules/koreader/koreader-catalog.service.ts
+@@ -760,6 +760,11 @@ export class KoreaderCatalogService {
+       libraryId: detail.libraryId,
+       libraryName: detail.libraryName,
+       rating: detail.rating,
++      // See the field's doc comment in packages/types/src/koreader.ts --
++      // detail.communityRatings already carries every provider's rating
++      // (BookDetailDto), this just forwards it to the KOReader plugin
++      // for the first time instead of dropping it on the floor here.
++      communityRatings: detail.communityRatings,
+       pageCount: detail.pageCount,
+       collections: detail.collections,
+       genres: detail.genres,
